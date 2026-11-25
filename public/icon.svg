@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Ha Jodeya Logo">
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="#1B4965" />
+  <rect x="4.5" y="4.5" width="55" height="55" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="1" />
+  <!-- 4-Stage PPIC Bars (FC -> MPS -> MRP -> SC) -->
+  <rect x="12" y="36" width="7.5" height="15" rx="2" fill="#60A5FA" />
+  <rect x="23" y="29" width="7.5" height="22" rx="2" fill="#2DD4BF" />
+  <rect x="34" y="22" width="7.5" height="29" rx="2" fill="#FBBF24" />
+  <rect x="45" y="14" width="7.5" height="37" rx="2" fill="#FFFFFF" />
+  <!-- Connecting Precision Spine -->
+  <path d="M15.75 31 L26.75 24 L37.75 17 L48.75 10" fill="none" stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="48.75" cy="10" r="2.8" fill="#FBBF24" />
+</svg>

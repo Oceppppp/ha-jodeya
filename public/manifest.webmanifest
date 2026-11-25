@@ -1,0 +1,17 @@
+{
+  "name": "Ha Jodeya — 4-Stage PPIC Workbench",
+  "short_name": "Ha Jodeya",
+  "description": "Aplikasi Perencanaan & Penjadwalan Produksi 4 Metode (Forecasting, MPS, MRP, Scheduling) dengan Penjelasan 6-Pilar Lengkap.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6F8FB",
+  "theme_color": "#1B4965",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

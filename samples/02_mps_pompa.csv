@@ -1,0 +1,16 @@
+#module,mps
+productName,Unit Pompa Industri HX-200
+beginningInventory,95
+safetyStock,25
+demandTimeFence,1
+planningTimeFence,3
+lotSizing,FOQ
+lotSize,220
+stdHoursPerUnit,0.65
+Periode,Forecast,CustomerOrders,FirmMPS,AvailableCapacity
+Mgg 1,173,182,,160
+Mgg 2,180,148,,160
+Mgg 3,188,120,,160
+Mgg 4,195,92,,160
+Mgg 5,203,54,,160
+Mgg 6,210,24,,140

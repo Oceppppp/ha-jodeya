@@ -1,0 +1,14 @@
+#module,forecasting
+alpha,0.4
+beta,0.25
+autoOptimize,true
+horizon,6
+Periode,Permintaan
+Jan,112
+Feb,120
+Mar,126
+Apr,134
+Mei,141
+Jun,149
+Jul,156
+Agu,165

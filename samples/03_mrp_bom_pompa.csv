@@ -1,0 +1,6 @@
+#module,mrp
+Item,Level,Parent,QtyPerParent,LeadTime,OnHand,SafetyStock,LotSizing,FixedOrderQty,FixedOrderPeriods,SetupCost,HoldingCostPerUnit,GR_Mgg 1,GR_Mgg 2,GR_Mgg 3,GR_Mgg 4,GR_Mgg 5,GR_Mgg 6
+Pompa HX-200,0,,1,1,40,10,L4L,200,2,500000,3500,220,0,220,220,220,220
+Sub-Impeller B,1,Pompa HX-200:1,1,1,70,15,FOQ,300,2,350000,2000,0,0,0,0,0,0
+Housing Motor C,1,Pompa HX-200:1,1,2,180,20,POQ,250,2,420000,2400,0,0,0,0,0,0
+Seal & Baut D,2,"Sub-Impeller B:2, Housing Motor C:2",2,1,450,50,FOQ,900,2,180000,500,0,0,0,0,0,0

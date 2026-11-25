@@ -1,0 +1,214 @@
+import { MODULE_MAP } from '../../core/registry/moduleRegistry.ts';
+import type {
+  ForecastingInput,
+  ModuleId,
+  ModuleInputData,
+  MpsInput,
+  MrpInput,
+  SchedulingInput,
+} from '../../core/types/module.types.ts';
+import type { ModuleJob, PipelineLink } from '../../core/types/workspace.types.ts';
+
+export const DEFAULT_MODULE_INPUTS: Record<ModuleId, ModuleInputData> = {
+  forecasting: {
+    moduleId: 'forecasting',
+    periodLabels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu'],
+    values: [112, 120, 126, 134, 141, 149, 156, 165],
+    movingAvgWindow: 3,
+    weightedWeights: [0.5, 0.3, 0.2],
+    alpha: 0.4,
+    beta: 0.25,
+    gamma: 0.3,
+    seasonalPeriod: 4,
+    seasonalType: 'none',
+    autoOptimize: true,
+    horizon: 6,
+  } satisfies ForecastingInput,
+
+  mps: {
+    moduleId: 'mps',
+    productName: 'Unit Pompa Industri HX-200',
+    beginningInventory: 95,
+    safetyStock: 25,
+    demandTimeFence: 1,
+    planningTimeFence: 3,
+    frozenZonePolicy: 'orders_only',
+    liquidZonePolicy: 'max',
+    lotSizing: 'FOQ',
+    lotSize: 220,
+    poqPeriods: 2,
+    setupCost: 850000,
+    holdingCostPerUnit: 4500,
+    stdHoursPerUnit: 0.65,
+    periodLabels: ['Mgg 1', 'Mgg 2', 'Mgg 3', 'Mgg 4', 'Mgg 5', 'Mgg 6'],
+    forecasts: [173, 180, 188, 195, 203, 210],
+    customerOrders: [182, 148, 120, 92, 54, 24],
+    firmMps: [null, null, null, null, null, null],
+    availableCapacity: [160, 160, 160, 160, 160, 140],
+  } satisfies MpsInput,
+
+  mrp: {
+    moduleId: 'mrp',
+    periodLabels: ['Mgg 1', 'Mgg 2', 'Mgg 3', 'Mgg 4', 'Mgg 5', 'Mgg 6'],
+    items: [
+      {
+        item: 'Pompa HX-200',
+        level: 0,
+        parent: '',
+        qtyPerParent: 1,
+        leadTime: 1,
+        onHand: 40,
+        safetyStock: 10,
+        lotSizing: 'L4L',
+        fixedOrderQty: 200,
+        fixedOrderPeriods: 2,
+        setupCost: 500000,
+        holdingCostPerUnit: 3500,
+        scheduledReceipts: [0, 0, 0, 0, 0, 0],
+        grossRequirements: [220, 0, 220, 220, 220, 220],
+      },
+      {
+        item: 'Sub-Impeller B',
+        level: 1,
+        parent: 'Pompa HX-200:1',
+        qtyPerParent: 1,
+        leadTime: 1,
+        onHand: 70,
+        safetyStock: 15,
+        lotSizing: 'FOQ',
+        fixedOrderQty: 300,
+        fixedOrderPeriods: 2,
+        setupCost: 350000,
+        holdingCostPerUnit: 2000,
+        scheduledReceipts: [0, 0, 0, 0, 0, 0],
+        grossRequirements: [0, 0, 0, 0, 0, 0],
+      },
+      {
+        item: 'Housing Motor C',
+        level: 1,
+        parent: 'Pompa HX-200:1',
+        qtyPerParent: 1,
+        leadTime: 2,
+        onHand: 180,
+        safetyStock: 20,
+        lotSizing: 'POQ',
+        fixedOrderQty: 250,
+        fixedOrderPeriods: 2,
+        setupCost: 420000,
+        holdingCostPerUnit: 2400,
+        scheduledReceipts: [100, 0, 0, 0, 0, 0],
+        grossRequirements: [0, 0, 0, 0, 0, 0],
+      },
+      {
+        item: 'Seal & Baut Presisi D',
+        level: 2,
+        parent: 'Sub-Impeller B:2, Housing Motor C:2',
+        qtyPerParent: 2,
+        leadTime: 1,
+        onHand: 450,
+        safetyStock: 50,
+        lotSizing: 'FOQ',
+        fixedOrderQty: 900,
+        fixedOrderPeriods: 2,
+        setupCost: 180000,
+        holdingCostPerUnit: 500,
+        scheduledReceipts: [0, 0, 0, 0, 0, 0],
+        grossRequirements: [0, 0, 0, 0, 0, 0],
+      },
+    ],
+  } satisfies MrpInput,
+
+  scheduling: {
+    moduleId: 'scheduling',
+    mode: 'single_machine',
+    jobs: [
+      { jobId: 'WO-101 (Batch Awal)', processingTime: 4.5, dueDate: 7, weight: 2, processingTimeMachine2: 3.5 },
+      { jobId: 'WO-102 (Impeller)', processingTime: 3.0, dueDate: 9, weight: 1, processingTimeMachine2: 4.0 },
+      { jobId: 'WO-103 (Housing)', processingTime: 6.5, dueDate: 15, weight: 2, processingTimeMachine2: 5.0 },
+      { jobId: 'WO-104 (Rakitan P3)', processingTime: 4.0, dueDate: 18, weight: 1, processingTimeMachine2: 2.5 },
+      { jobId: 'WO-105 (Rakitan P4)', processingTime: 7.5, dueDate: 24, weight: 3, processingTimeMachine2: 6.0 },
+    ],
+  } satisfies SchedulingInput,
+};
+
+export function createJobForModule(moduleId: ModuleId, customTitle?: string): ModuleJob {
+  const meta = MODULE_MAP[moduleId];
+  return {
+    id: `job-${moduleId}-${Math.random().toString(36).slice(2, 7)}`,
+    moduleId,
+    title: customTitle ?? `${meta.stageNumber} · ${meta.indonesianName}`,
+    enabled: true,
+    input: structuredClone(DEFAULT_MODULE_INPUTS[moduleId]),
+  };
+}
+
+export function createPpic4StagePreset(): { jobs: ModuleJob[]; links: PipelineLink[] } {
+  const fcJob: ModuleJob = {
+    id: 'job-fc-stage1',
+    moduleId: 'forecasting',
+    title: '01 · Ramalan Permintaan Pompa HX-200',
+    enabled: true,
+    input: structuredClone(DEFAULT_MODULE_INPUTS.forecasting),
+  };
+
+  const mpsJob: ModuleJob = {
+    id: 'job-mps-stage2',
+    moduleId: 'mps',
+    title: '02 · Jadwal Induk MPS (ATP & RCCP)',
+    enabled: true,
+    input: structuredClone(DEFAULT_MODULE_INPUTS.mps),
+  };
+
+  const mrpJob: ModuleJob = {
+    id: 'job-mrp-stage3',
+    moduleId: 'mrp',
+    title: '03 · Kebutuhan Material BOM 3-Level',
+    enabled: true,
+    input: structuredClone(DEFAULT_MODULE_INPUTS.mrp),
+  };
+
+  const scJob: ModuleJob = {
+    id: 'job-sc-stage4',
+    moduleId: 'scheduling',
+    title: '04 · Urutan Kerja Lantai Produksi',
+    enabled: true,
+    input: structuredClone(DEFAULT_MODULE_INPUTS.scheduling),
+  };
+
+  const links: PipelineLink[] = [
+    {
+      id: 'link-fc-to-mps',
+      sourceJobId: fcJob.id,
+      sourceOutputKey: 'horizonForecasts',
+      targetJobId: mpsJob.id,
+      targetField: 'forecasts',
+      multiplier: 1,
+    },
+    {
+      id: 'link-mps-to-mrp',
+      sourceJobId: mpsJob.id,
+      sourceOutputKey: 'mpsSchedule',
+      targetJobId: mrpJob.id,
+      targetField: 'grossRequirements',
+      multiplier: 1,
+    },
+    {
+      id: 'link-mrp-to-sc',
+      sourceJobId: mrpJob.id,
+      sourceOutputKey: 'workOrderList',
+      targetJobId: scJob.id,
+      targetField: 'workOrdersFromMrp',
+      multiplier: 0.02,
+    },
+  ];
+
+  return { jobs: [fcJob, mpsJob, mrpJob, scJob], links };
+}
+
+export function createIndependent4ModulesPack(): { jobs: ModuleJob[]; links: PipelineLink[] } {
+  const preset = createPpic4StagePreset();
+  return {
+    jobs: preset.jobs,
+    links: [],
+  };
+}

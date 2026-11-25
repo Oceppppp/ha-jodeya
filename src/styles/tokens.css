@@ -1,0 +1,153 @@
+/**
+ * Ha Jodeya — Design System Tokens ("Modern Precision PPIC Workbench")
+ *
+ * Hierarchy:
+ * 1. Calm 3-plane surface system (App Canvas -> Spine Chrome -> Analytical Paper)
+ * 2. Deep Steel Navy primary brand + restrained stage micro-accents (01..04)
+ * 3. Strict typographic scale & tabular figures across all quantitative cells
+ * 4. Precision Dark Slate mode with zero neon glow and zero purple-on-dark
+ */
+:root {
+  /* Surface Hierarchy */
+  --bg-app: #f6f8fb;
+  --bg-chrome: #eef2f7;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --bg-hover: #e6ecf4;
+  --bg-highlight: #ebf3f9;
+  --bg-topbar: rgba(255, 255, 255, 0.95);
+
+  /* Typographic Ink */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+
+  /* Hairlines */
+  --border-hairline: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-focus: #1b4965;
+
+  /* Brand & Semantic Status */
+  --primary: #1b4965;
+  --primary-hover: #13364b;
+  --primary-soft: #ebf3f9;
+  --primary-border: #adc9df;
+  --primary-ink: #ffffff;
+
+  --success: #047857;
+  --success-soft: #ecfdf5;
+  --success-border: #a7f3d0;
+
+  --warning: #b45309;
+  --warning-soft: #fffbeb;
+  --warning-border: #fde68a;
+
+  --error: #b91c1c;
+  --error-soft: #fef2f2;
+  --error-border: #fecaca;
+
+  /* 4-Stage PPIC Micro-Accents (Used strictly on Stage Badges & DAG Nodes) */
+  --stage-fc: #2563eb;
+  --stage-mps: #0d9488;
+  --stage-mrp: #b45309;
+  --stage-sc: #1e40af;
+
+  /* Chart Series Palette */
+  --chart-1: #1b4965;
+  --chart-2: #0d9488;
+  --chart-3: #d97706;
+  --chart-4: #475569;
+  --chart-5: #dc2626;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --text-2xs: 0.6875rem; /* 11px */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.8125rem;  /* 13px */
+  --text-base: 0.8438rem;/* 13.5px */
+  --text-md: 0.9375rem;  /* 15px */
+  --text-lg: 1.0625rem;  /* 17px */
+  --text-xl: 1.375rem;   /* 22px */
+  --text-kpi: 1.375rem;  /* 22px */
+
+  /* 8px Spatial Rhythm */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  /* Precision Radii */
+  --radius-xs: 4px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
+  --shadow-sheet:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 0 0 1px rgba(226, 232, 240, 0.7);
+  --shadow-floating:
+    0 12px 32px -4px rgba(15, 23, 42, 0.14),
+    0 2px 6px -1px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-app: #0e131b;
+  --bg-chrome: #131a24;
+  --bg-surface: #18202d;
+  --bg-subtle: #1f2937;
+  --bg-hover: #263345;
+  --bg-highlight: rgba(96, 165, 250, 0.14);
+  --bg-topbar: rgba(19, 26, 36, 0.95);
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #8b9bb0;
+  --text-faint: #64748b;
+
+  --border-hairline: #273244;
+  --border-strong: #37465e;
+  --border-focus: #60a5fa;
+
+  --primary: #60a5fa;
+  --primary-hover: #93c5fd;
+  --primary-soft: rgba(96, 165, 250, 0.15);
+  --primary-border: rgba(96, 165, 250, 0.4);
+  --primary-ink: #0b111a;
+
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.14);
+  --success-border: rgba(52, 211, 153, 0.36);
+
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.14);
+  --warning-border: rgba(251, 191, 36, 0.38);
+
+  --error: #f87171;
+  --error-soft: rgba(248, 113, 113, 0.15);
+  --error-border: rgba(248, 113, 113, 0.38);
+
+  --stage-fc: #3b82f6;
+  --stage-mps: #14b8a6;
+  --stage-mrp: #d97706;
+  --stage-sc: #38bdf8;
+
+  --chart-1: #60a5fa;
+  --chart-2: #2dd4bf;
+  --chart-3: #fbbf24;
+  --chart-4: #94a3b8;
+  --chart-5: #f87171;
+
+  --shadow-sheet:
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(39, 50, 68, 0.85);
+  --shadow-floating:
+    0 16px 38px -4px rgba(0, 0, 0, 0.58),
+    0 2px 8px -1px rgba(0, 0, 0, 0.35);
+}

@@ -1,0 +1,8 @@
+#module,scheduling
+mode,single_machine
+JobID,ProcessingTime,DueDate,Weight,Machine2Time
+WO-101,4.5,7,2,3.5
+WO-102,3.0,9,1,4.0
+WO-103,6.5,15,2,5.0
+WO-104,4.0,18,1,2.5
+WO-105,7.5,24,3,6.0
