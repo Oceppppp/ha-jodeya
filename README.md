@@ -41,6 +41,8 @@ npm run build       # Bundle produksi Vite + stempel SHA-256 dist/sw.js
 - [Project Planning & Roadmap](docs/PROJECT_PLANNING.md)
 - [Design System & Visual Hierarchy](docs/DESIGN_SYSTEM.md)
 - [Arsitektur 5-Lapisan](docs/ARCHITECTURE.md)
+- [Presentasi Aplikasi Ha Jodeya (PPTX — 14 Slide)](docs/presentation/Ha_Jodeya_Presentasi_Aplikasi.pptx)
+- [Script Presentasi Per Slide](docs/presentation/SCRIPT_PRESENTASI.md)
 - [Histori Percakapan & Log Pengembangan](docs/CHAT_HISTORY.md)
 - Project Skill: [`.agents/skills/ha-jodeya/SKILL.md`](.agents/skills/ha-jodeya/SKILL.md)
 

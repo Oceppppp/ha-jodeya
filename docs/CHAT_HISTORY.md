@@ -31,7 +31,12 @@
 | **08** | Melanjutkan pengerjaan hingga selesai, push ke GitHub, dan melaporkan daftar skill yang digunakan | Seluruh gerbang QA lulus (Lint, TSC, 18 Tes, Build PWA, Live Chrome E2E), repo `Oceppppp/ha-jodeya` dibuat & di-push (`CI` hijau), daftar 12 skill dilaporkan |
 | **09** | Memasukkan histori percakapan ini ke GitHub | Dokumen `docs/CHAT_HISTORY.md` disusun, ditautkan di `README.md`, dan di-push ke `Oceppppp/ha-jodeya` (commit `0b4f99c`, CI hijau) |
 | **10** | Menanyakan area UI dan penampilan aplikasi yang masih bisa dikembangkan | Audit visual 4 screenshot aktual (Dashboard, Editor MPS, 6-Pilar, Pipeline Dark) menghasilkan rancangan paket **UI Polish v1.1** |
-| **11** | Menjalankan paket UI Polish v1.1 + memperbaiki tampilan HP (berdasarkan foto screenshot iPhone pengguna) + memperbarui histori chat & repo GitHub setelah verifikasi menyeluruh | Paket **UI Polish v1.1 & Mobile-First Overhaul** diterapkan, diverifikasi `overflowPx = 0` pada viewport Desktop 1440px & iPhone 390px, seluruh gerbang QA lulus, lalu di-push ke `Oceppppp/ha-jodeya` |
+| **11** | Menjalankan paket UI Polish v1.1 + memperbaiki tampilan HP (berdasarkan foto screenshot iPhone pengguna) + memperbarui histori chat & repo GitHub setelah verifikasi menyeluruh | Paket **UI Polish v1.1 & Mobile-First Overhaul** diterapkan, diverifikasi `overflowPx = 0` pada viewport Desktop 1440px & iPhone 390px, seluruh gerbang QA lulus, lalu di-push ke `Oceppppp/ha-jodeya` (commit `2785a05`, CI Run `#45754104966` hijau) |
+| **12** | Membuat PPT aplikasi Ha Jodeya berbasis referensi (`Ha_Jodeya_Technical_Deck.pptx`) berisi Pembagian Tugas di Slide 1, cara kerja & penggunaan, serta fitur aplikasi | Tersusun PPT Widescreen 16:9 ([`Ha_Jodeya_Presentasi_Aplikasi.pptx`](presentation/Ha_Jodeya_Presentasi_Aplikasi.pptx)) berisi 12 slide dengan Pembagian Tugas (**Joseph**, **Hansen**, **Raden & Arya**) di Slide 1 + 5 screenshot asli aplikasi v1.1, terverifikasi visual via LibreOffice + `pdftoppm` |
+| **13** | Membandingkan PPT referensi dengan PPT baru yang dibuat | Analisis komparatif struktur, fokus audiens, kepadatan teks, keberadaan screenshot nyata, serta usulan 2 opsi penyempurnaan |
+| **14** | Menjalankan Opsi 2: menambahkan 2 slide penjelasan Lampiran Teknis (*Appendix A & B*) | PPT diperbarui menjadi **14 slide** dengan tambahan Slide 13 (Arsitektur 5-Lapisan & 12 Agent Skills) dan Slide 14 (Tabel QA/CI, Perbaikan v1.0→v1.1, & Roadmap v1.2), diverifikasi ulang secara visual |
+| **15** | Membuat script presentasi per slide dari PPT tersebut | Disusun naskah presentasi lengkap Slide 01–14 ([`SCRIPT_PRESENTASI.md`](presentation/SCRIPT_PRESENTASI.md)) lengkap dengan estimasi durasi, petunjuk layar, dan saran giliran pembicara tim |
+| **16** | Memperbarui histori chat ke GitHub dan menambahkan PPT ke repositori GitHub | File PPT 14-slide & script presentasi ditambahkan di `docs/presentation/`, ditautkan di `README.md`, `docs/CHAT_HISTORY.md` diperbarui, lalu di-push ke `Oceppppp/ha-jodeya` |
 
 ---
 
@@ -184,7 +189,72 @@
    - **Editor, MPS & 6-Pilar (`ModuleInputPanel.tsx`, `MpsEditor.tsx`, `ExplanationPanel.tsx`, `ResultView.tsx`):** Breadcrumb pipeline 1-baris, *sticky jump-bar* 1-baris di desktop & HP + toggle **Split-View** (≥1380px), 3 sub-kartu parameter MPS tanpa field yatim, badge 6-Pilar runtut (`01`..`06`), kartu alasan kausal berikon status (`✓`, `⚠`, `✦`), dan grid 2×2 seimbang pada Pilar `03 · ARTI ANGKA`.
    - **Pipeline DAG (`SvgPipelineDag.tsx`, `PipelineLinker.tsx`):** Lebar node diperbesar tanpa potongan kata, label panah Bahasa Indonesia (`Deret Forecast`, `Jadwal MPS`, `Order Kerja MRP`), animasi aliran garis putus-putus, petunjuk geser horizontal di HP, serta label ramah pengguna di tabel sambungan aktif.
 3. **Verifikasi Ulang Desktop (1440×900) & Mobile iPhone (390×844):**
-   - Menjalankan `npm run lint`, `npx tsc --noEmit`, `npm test`, `npm run build`, dan E2E Headless Chrome pada 7 kombinasi layar (Desktop 1440px & Mobile 390px di seluruh tab), memastikan `overflowPx = 0`, 0 console errors, dan 0 page exceptions sebelum push ke GitHub.
+   - Menjalankan `npm run lint`, `npx tsc --noEmit`, `npm test`, `npm run build`, dan E2E Headless Chrome pada 7 kombinasi layar (Desktop 1440px & Mobile 390px di seluruh tab), memastikan `overflowPx = 0`, 0 console errors, dan 0 page exceptions; commit `2785a05` ter-push ke `main` dengan GitHub Actions CI Run `#45754104966` lulus **`success`**.
+
+---
+
+### Tahap 12 — Pembuatan PPT Presentasi Aplikasi Ha Jodeya (Berbasis Referensi)
+
+**Prompt Pengguna:**
+> Gunakan PPT  yang saya kirimkan sebagai referensi. 
+> Buatkan saya ppt dari aplikasi Ha Jodeya, isi ppt nya :
+> 1. Penekanan mengenai cara kerja dan penggunaan Aplikasi
+> 2. Penjelasan fitur aplikasinya
+> 3. Pembagian Tugas (Letakan di slide pertama)
+> - Joseph : Menjalankan Promtnya kedalam AI Antigravity
+> - Hansen : Pembuatan Promt dan Planning untuk aplikasinya
+> - Raden & Arya : Pembuatan PPT 
+> *(Melampirkan `Ha_Jodeya_Technical_Deck.pptx` sebagai referensi visual)*
+
+**Respons & Keputusan Utama:**
+- Menginspeksi struktur, palet warna (`#0F172A` Dark Navy, `#F8FAFC` Light Paper, aksen 4 tahap `#2563EB` / `#0D9488` / `#D97706` / `#4F46E5`), tipografi (`Calibri`/`Consolas`), dan ukuran kanvas (16:9 Widescreen `13.333" × 7.5"`) dari PPT referensi.
+- Membangun PPT baru menggunakan `python-pptx` sebanyak **12 slide** yang mewarisi gaya visual referensi, menempatkan **Pembagian Tugas Tim (Joseph, Hansen, Raden & Arya)** secara menonjol di **Slide 01**, menekankan alur cara kerja & penggunaan (Slide 02–07), menjelaskan fitur lengkap aplikasi (Slide 08–11), menyertakan **5 screenshot asli aplikasi v1.1** (Dashboard, Editor MPS, 6-Pilar, Pipeline Dark Mode, dan mockup HP 390px), serta Slide 12 Penutup + Panduan Demo 3 Langkah.
+- Melakukan verifikasi visual seluruh 12 slide melalui render LibreOffice Impress → PDF → PNG (`pdftoppm`) untuk memastikan tidak ada teks terpotong atau elemen bertumpuk.
+
+---
+
+### Tahap 13 — Perbandingan PPT Referensi vs PPT Baru
+
+**Prompt Pengguna:**
+> coba bandingkan ppt yang saya kirimkan dengan ppt yang tadi anda buat
+
+**Respons & Keputusan Utama:**
+- Menganalisis metrik objektif dan struktur kedua deck: PPT referensi (`15 slide`, `72 KB`, 0 gambar, fokus *Technical Engineering Portfolio* / arsitektur kode & post-mortem) vs PPT baru (`12 slide`, `1,07 MB`, 5 screenshot nyata aplikasi, Pembagian Tugas di Slide 1, fokus *Cara Kerja, Penggunaan & Demo*).
+- Memberikan 2 opsi penyempurnaan lanjutan: (1) pemadatan teks + *Speaker Notes*, atau (2) penambahan 2 slide **Lampiran Teknis (*Appendix A & B*)** sebagai cadangan Q&A.
+
+---
+
+### Tahap 14 — Penambahan 2 Slide Lampiran Teknis (Appendix A & B)
+
+**Prompt Pengguna:**
+> jalankan opsi 2 yang menambahkan slide penjelasan lagi
+
+**Respons & Keputusan Utama:**
+- Memperbarui PPT menjadi **14 slide** ([`docs/presentation/Ha_Jodeya_Presentasi_Aplikasi.pptx`](presentation/Ha_Jodeya_Presentasi_Aplikasi.pptx)) dengan menambahkan 2 slide cadangan Q&A setelah Slide 12:
+  - **Slide 13 (`Appendix A`):** Arsitektur 5-Lapisan Bersih (`L5`–`L1`), jaminan keandalan teknis (*Pure Layer Audit*, PWA SHA-256, tanpa server), dan ringkasan **12 Agent Skills** terorkestrasi.
+  - **Slide 14 (`Appendix B`):** Tabel 6 gerbang QA/CI terverifikasi, ringkasan perbaikan `v1.0 → v1.1` (termasuk mobile 390px), dan **Roadmap v1.2** (*CRP pasca-MRP*, *Multi-Machine Job Shop*, & *Edge-Case Test Suite*).
+- Memverifikasi ulang hasil render visual Slide 12, 13, dan 14 via LibreOffice + `pdftoppm`.
+
+---
+
+### Tahap 15 — Penyusunan Script Presentasi Per Slide
+
+**Prompt Pengguna:**
+> dari ppt tersebut buatkan script untuk presentasinya per slide
+
+**Respons & Keputusan Utama:**
+- Menyusun naskah presentasi lengkap dari **Slide 01 hingga Slide 14** ([`docs/presentation/SCRIPT_PRESENTASI.md`](presentation/SCRIPT_PRESENTASI.md)) beserta estimasi durasi (~10–12 menit presentasi inti + 3 menit demo), petunjuk penunjukan layar, saran giliran pembicara tim (**Hansen**, **Joseph**, **Raden & Arya**), serta skrip jawaban Q&A untuk Appendix A & B.
+
+---
+
+### Tahap 16 — Publikasi PPT, Script Presentasi & Pembaruan Histori Chat ke GitHub
+
+**Prompt Pengguna:**
+> update chat historinya ke github dan tambahkan pptnya ini ke githubnya
+
+**Respons & Keputusan Utama:**
+- Menambahkan [`docs/presentation/Ha_Jodeya_Presentasi_Aplikasi.pptx`](presentation/Ha_Jodeya_Presentasi_Aplikasi.pptx) (14 slide) dan [`docs/presentation/SCRIPT_PRESENTASI.md`](presentation/SCRIPT_PRESENTASI.md) ke repositori `Oceppppp/ha-jodeya`.
+- Menautkan keduanya di [`README.md`](../README.md), memperbarui [`docs/CHAT_HISTORY.md`](CHAT_HISTORY.md) hingga Tahap 16, lalu commit dan push ke branch `main`.
 
 ---
 
@@ -229,4 +299,5 @@
 | **Production Build & PWA** | `npm run build` | **Sukses** — `dist/sw.js` berstempel SHA-256 otomatis dengan daftar precache lengkap |
 | **Live Browser E2E (Desktop 1440×900)** | Headless Chrome pada `vite preview` | HTTP `200` (`/`, `/sw.js`, `/manifest.webmanifest`, `/icon.svg`), TopBar `56px`, Dropdown Ekspor `6 item`, 3 sub-kartu MPS, 6 grafik, **0 overflow**, **0 console errors**, **0 page exceptions** |
 | **Live Browser E2E (Mobile iPhone 390×844)** | Headless Chrome Mobile Emulation (2× DPR) | `overflowPx: 0` pada seluruh 4 tab (*Dashboard*, *Editor MPS*, *Pipeline Dark*, *Upload*), TopBar mobile 2-baris `94px`, **0 console errors**, **0 page exceptions** |
-| **GitHub Actions CI** | `Oceppppp/ha-jodeya` (`main`) | Rilis v1.0 (`#45615116961`) & Docs (`#45617745777`) **`success`**; diverifikasi ulang untuk rilis v1.1 |
+| **Visual QA Presentasi PPTX** | LibreOffice Impress + `pdftoppm` | **14/14 slide** terverifikasi visual (nol teks terpotong, nol elemen bertumpuk) |
+| **GitHub Actions CI** | `Oceppppp/ha-jodeya` (`main`) | Rilis v1.0 (`#45615116961`), Docs (`#45617745777`), & v1.1 UI/Mobile (`#45754104966`) seluruhnya **`success`** |
