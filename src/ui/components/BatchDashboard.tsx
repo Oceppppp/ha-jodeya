@@ -1,6 +1,7 @@
 import { Fragment, useState } from 'react';
 import {
   AlertTriangle,
+  ArrowRight,
   Bookmark,
   CheckCircle2,
   ChevronDown,
@@ -142,7 +143,7 @@ export function BatchDashboard() {
   return (
     <>
       <header className="view-header">
-        <div>
+        <div className="view-header-main">
           <div className="view-eyebrow">
             <span>RINGKASAN EKSEKUTIF 4-TAHAP PPIC</span>
             <span aria-hidden="true">·</span>
@@ -161,8 +162,7 @@ export function BatchDashboard() {
             <input
               type="text"
               id="input-scenario-label"
-              className="form-control"
-              style={{ width: 155, height: 30, fontSize: 'var(--text-xs)' }}
+              className="form-control scenario-input-field"
               placeholder="Nama skenario What-If…"
               value={scenarioLabel}
               onChange={(e) => setScenarioLabel(e.target.value)}
@@ -177,7 +177,7 @@ export function BatchDashboard() {
               onClick={handleSaveScenario}
               title={`Simpan hasil saat ini sebagai skenario What-If (maks. ${MAX_SCENARIO_SNAPSHOTS})`}
             >
-              <Bookmark size={13} /> Simpan Skenario ({snapshots.length}/{MAX_SCENARIO_SNAPSHOTS})
+              <Bookmark size={13} /> Simpan ({snapshots.length}/{MAX_SCENARIO_SNAPSHOTS})
             </button>
           </div>
           {snapshots.length > 0 && (
@@ -195,62 +195,106 @@ export function BatchDashboard() {
         </div>
       </header>
 
-      {/* 4-Stage Flow Health Strip */}
+      {/* 4-Stage Flow Health Strip with Directional Arrows & Stage Accents */}
       <section className="stage-health-grid" aria-label="Kesehatan 4 Tahap Rantai PPIC">
-        {MODULE_REGISTRY.map((mod) => {
+        {MODULE_REGISTRY.map((mod, idx) => {
           const job = executedJobs.find((j) => j.moduleId === mod.id);
           const res = job ? summary.resultsByJobId[job.id] : undefined;
           const mainKpi = res?.kpis[1] ?? res?.kpis[0];
 
           return (
-            <button
-              key={mod.id}
-              type="button"
-              className="stage-health-card"
-              onClick={() => {
-                if (job) selectJob(job.id, true);
-                else addModuleJob(mod.id);
-              }}
-            >
-              <div className="stage-health-top">
-                <span className="stage-health-tag">
-                  <span
-                    className="stage-pill"
-                    style={{ background: mod.stageAccentVar }}
-                  >
-                    {mod.stageNumber}
+            <div key={mod.id} className="stage-health-slot">
+              <button
+                type="button"
+                className="stage-health-card"
+                style={{ borderTopColor: mod.stageAccentVar }}
+                onClick={() => {
+                  if (job) selectJob(job.id, true);
+                  else addModuleJob(mod.id);
+                }}
+              >
+                <div className="stage-health-top">
+                  <span className="stage-health-tag">
+                    <span
+                      className="stage-pill"
+                      style={{ background: mod.stageAccentVar }}
+                    >
+                      {mod.stageNumber}
+                    </span>
+                    {mod.shortLabel}
                   </span>
-                  {mod.shortLabel}
+                  <span
+                    className={`status-dot ${res?.status ?? ''}`}
+                    title={res ? `Status: ${res.status}` : 'Belum aktif'}
+                  />
+                </div>
+                <div className="stage-health-metric-label">
+                  {mainKpi ? mainKpi.label : mod.indonesianName}
+                </div>
+                <div className="stage-health-kpi">
+                  {mainKpi
+                    ? `${mainKpi.value}${mainKpi.unit ? ` ${mainKpi.unit}` : ''}`
+                    : 'Belum Aktif'}
+                </div>
+                <div className="stage-health-sub">
+                  {res ? res.explanation.keyDecision : mod.description}
+                </div>
+              </button>
+
+              {idx < MODULE_REGISTRY.length - 1 && (
+                <span className="stage-flow-arrow" aria-hidden="true">
+                  <ArrowRight size={11} />
                 </span>
-                <span className={`status-dot ${res?.status ?? ''}`} />
-              </div>
-              <div className="stage-health-kpi">
-                {mainKpi
-                  ? `${mainKpi.value}${mainKpi.unit ? ` ${mainKpi.unit}` : ''}`
-                  : 'Belum Aktif'}
-              </div>
-              <div className="stage-health-sub">
-                {res ? res.explanation.keyDecision : mod.indonesianName}
-              </div>
-            </button>
+              )}
+            </div>
           );
         })}
       </section>
 
-      {/* Executive Batch KPI Strip */}
+      {/* Interactive Executive Batch KPI Strip (Click to Filter Matrix Below) */}
       <section className="kpi-grid" aria-label="Metrik Eksekusi Batch">
-        <div className="kpi-box emphasis-primary">
-          <div className="kpi-label">Metode Dieksekusi</div>
+        <button
+          type="button"
+          className={`kpi-box kpi-box-btn emphasis-primary ${statusFilter === 'all' ? 'active-filter' : ''}`}
+          onClick={() => setStatusFilter('all')}
+          title="Tampilkan seluruh metode di tabel bawah"
+        >
+          <div className="kpi-label">
+            <span>Metode Dieksekusi</span>
+          </div>
           <div className="kpi-val">{summary.totalJobs}</div>
-        </div>
-        <div className="kpi-box emphasis-success">
-          <div className="kpi-label">Status Optimal</div>
-          <div className="kpi-val">{summary.successCount}</div>
-        </div>
-        <div className={`kpi-box ${summary.warningCount > 0 ? 'emphasis-warning' : ''}`}>
-          <div className="kpi-label">Peringatan Kapasitas / Lot</div>
-          <div className="kpi-val">{summary.warningCount}</div>
-        </div>
+        </button>
+
+        <button
+          type="button"
+          className={`kpi-box kpi-box-btn emphasis-success ${statusFilter === 'success' ? 'active-filter' : ''}`}
+          onClick={() => setStatusFilter((cur) => (cur === 'success' ? 'all' : 'success'))}
+          title="Klik untuk memfilter metode berstatus Optimal"
+        >
+          <div className="kpi-label">
+            <span>Status Optimal</span>
+            <CheckCircle2 size={13} style={{ color: 'var(--success)' }} />
+          </div>
+          <div className="kpi-val kpi-val-success">{summary.successCount}</div>
+        </button>
+
+        <button
+          type="button"
+          className={`kpi-box kpi-box-btn ${summary.warningCount > 0 ? 'emphasis-warning' : ''} ${statusFilter === 'warning' ? 'active-filter' : ''}`}
+          onClick={() => setStatusFilter((cur) => (cur === 'warning' ? 'all' : 'warning'))}
+          title="Klik untuk memfilter metode yang memiliki peringatan kapasitas/lot"
+        >
+          <div className="kpi-label">
+            <span>Peringatan Kapasitas / Lot</span>
+            {summary.warningCount > 0 && (
+              <AlertTriangle size={13} style={{ color: 'var(--warning)' }} />
+            )}
+          </div>
+          <div className={`kpi-val ${summary.warningCount > 0 ? 'kpi-val-warning' : ''}`}>
+            {summary.warningCount}
+          </div>
+        </button>
+
         <div className="kpi-box">
           <div className="kpi-label">Waktu Komputasi Paralel</div>
           <div className="kpi-val">
@@ -359,30 +403,18 @@ export function BatchDashboard() {
 
       {/* Master Batch Matrix */}
       <section className="surface-panel" style={{ padding: '0.9rem 1rem' }}>
-        <div
-          className="no-print"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '0.6rem',
-            flexWrap: 'wrap',
-            marginBottom: '0.75rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div className="batch-toolbar no-print">
+          <div className="batch-toolbar-left">
             <input
               type="search"
               id="input-search-batch"
-              className="form-control"
-              style={{ width: 230, height: 30, fontSize: 'var(--text-xs)' }}
+              className="form-control batch-search-input"
               placeholder="Cari tahap, judul, atau ringkasan…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
             <select
-              className="form-control"
-              style={{ width: 145, height: 30, fontSize: 'var(--text-xs)' }}
+              className="form-control batch-filter-select"
               value={statusFilter}
               onChange={(e) =>
                 setStatusFilter(e.target.value as 'all' | 'success' | 'warning' | 'error')
@@ -395,13 +427,13 @@ export function BatchDashboard() {
             </select>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <div className="batch-toolbar-right">
             <button
               type="button"
               className="btn btn-sm"
               onClick={() => setAllExpanded(true)}
             >
-              <ChevronsUpDown size={12} /> Buka Semua Penjelasan
+              <ChevronsUpDown size={12} /> Buka Semua
             </button>
             <button
               type="button"

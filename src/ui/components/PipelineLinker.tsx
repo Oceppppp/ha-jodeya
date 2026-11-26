@@ -227,19 +227,43 @@ export function PipelineLinker() {
                 {state.links.map((lk) => {
                   const src = state.jobs.find((j) => j.id === lk.sourceJobId);
                   const tgt = state.jobs.find((j) => j.id === lk.targetJobId);
+                  const srcLabel = src
+                    ? MODULE_MAP[src.moduleId].exportableOutputs.find(
+                        (o) => o.key === lk.sourceOutputKey,
+                      )?.label
+                    : undefined;
+                  const tgtLabel = tgt
+                    ? MODULE_MAP[tgt.moduleId].injectableTargets.find(
+                        (t) => t.field === lk.targetField,
+                      )?.label
+                    : undefined;
                   return (
                     <tr key={lk.id}>
                       <td>
                         <strong>{src?.title ?? lk.sourceJobId}</strong>
                       </td>
-                      <td className="mono-num">{lk.sourceOutputKey}</td>
+                      <td>
+                        <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600 }}>
+                          {srcLabel ?? lk.sourceOutputKey}
+                        </div>
+                        <div className="mono-num" style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                          {lk.sourceOutputKey}
+                        </div>
+                      </td>
                       <td style={{ color: 'var(--primary)' }}>
                         <ArrowRight size={14} />
                       </td>
                       <td>
                         <strong>{tgt?.title ?? lk.targetJobId}</strong>
                       </td>
-                      <td className="mono-num">{lk.targetField}</td>
+                      <td>
+                        <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600 }}>
+                          {tgtLabel ?? lk.targetField}
+                        </div>
+                        <div className="mono-num" style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                          {lk.targetField}
+                        </div>
+                      </td>
                       <td className="mono-num">×{lk.multiplier}</td>
                       <td className="no-print" style={{ textAlign: 'right' }}>
                         <button

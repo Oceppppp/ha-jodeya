@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
 import {
+  ChevronDown,
   Command,
   Download,
   FileJson,
@@ -40,6 +42,27 @@ export function TopBar() {
     triggerFullPdfReport,
   } = useWorkspace();
 
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!exportOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setExportOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setExportOpen(false);
+    };
+    window.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('mousedown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [exportOpen]);
+
   const enabledCount = state.jobs.filter((j) => j.enabled).length;
   const resultCount = state.batchSummary?.totalJobs ?? 0;
 
@@ -54,20 +77,18 @@ export function TopBar() {
           aria-label="Buka atau tutup sidebar 4 tahap PPIC"
           aria-expanded={state.sidebarOpen}
         >
-          <Menu size={15} />
+          <Menu size={16} />
         </button>
 
         <div className="brand-mark" aria-hidden="true">
-          <img src="/icon.svg" alt="" width={32} height={32} style={{ display: 'block' }} />
+          <img src="/icon.svg" alt="" width={32} height={32} style={{ display: 'block', width: '100%', height: '100%' }} />
         </div>
         <div className="brand-text-col">
           <div className="brand-title-row">
             <span className="brand-title">Ha Jodeya</span>
             <span className="brand-version-tag">4-Tahap PPIC</span>
           </div>
-          <div className="brand-subtitle">
-            Forecasting · MPS · MRP · Scheduling
-          </div>
+          <div className="brand-subtitle">Forecasting · MPS · MRP · Scheduling</div>
         </div>
       </div>
 
@@ -79,7 +100,7 @@ export function TopBar() {
           onClick={() => setView('batch-results')}
         >
           <LayoutGrid size={13} />
-          <span>Ringkasan</span>
+          <span className="nav-tab-label">Ringkasan</span>
           <span className="nav-count">{resultCount}</span>
         </button>
         <button
@@ -89,7 +110,7 @@ export function TopBar() {
           onClick={() => setView('module-editor')}
         >
           <SlidersHorizontal size={13} />
-          <span>Editor &amp; Analisis</span>
+          <span className="nav-tab-label">Editor</span>
         </button>
         <button
           type="button"
@@ -98,7 +119,7 @@ export function TopBar() {
           onClick={() => setView('pipeline')}
         >
           <GitBranch size={13} />
-          <span>Pipeline</span>
+          <span className="nav-tab-label">Pipeline</span>
           <span className="nav-count">{state.links.length}</span>
         </button>
         <button
@@ -108,12 +129,16 @@ export function TopBar() {
           onClick={() => setView('file-upload')}
         >
           <UploadCloud size={13} />
-          <span>Upload</span>
+          <span className="nav-tab-label">Upload</span>
         </button>
       </nav>
 
       <div className="topbar-actions">
-        <div className="toolbar-cluster" role="group" aria-label="Riwayat dan Perintah Cepat">
+        <div
+          className="toolbar-cluster toolbar-cluster-desktop"
+          role="group"
+          aria-label="Riwayat dan Perintah Cepat"
+        >
           <button
             type="button"
             id="btn-undo"
@@ -148,107 +173,165 @@ export function TopBar() {
           </button>
         </div>
 
-        <div className="toolbar-cluster" role="group" aria-label="Template dan Ekspor">
+        {/* Consolidated Export & Report Dropdown (Clean on Desktop + Accessible on Mobile) */}
+        <div className="dropdown-wrap" ref={exportMenuRef}>
           <button
             type="button"
-            id="btn-download-master-template"
-            className="btn btn-tool"
-            onClick={() => void downloadMasterTemplateExcel()}
-            title="Unduh Template Excel 4-Sheet (Forecasting, MPS, MRP, Scheduling)"
+            id="btn-export-menu"
+            className="btn btn-sm"
+            aria-haspopup="menu"
+            aria-expanded={exportOpen}
+            onClick={() => setExportOpen((v) => !v)}
+            title="Ekspor Excel, JSON, Template, atau Cetak Laporan PDF"
           >
-            <FileSpreadsheet size={13} /> Template
+            <Download size={13} />
+            <span className="btn-export-label">Ekspor</span>
+            <ChevronDown size={12} />
           </button>
 
-          {state.batchSummary && (
-            <button
-              type="button"
-              id="btn-export-all-excel"
-              className="btn btn-tool"
-              onClick={() => void exportBatchResultsExcel(state.jobs, state.batchSummary!)}
-              title="Ekspor seluruh hasil & Penjelasan 6-Pilar ke 1 file Excel multi-sheet"
-            >
-              <Download size={13} /> .xlsx
-            </button>
+          {exportOpen && (
+            <div className="dropdown-menu" role="menu" aria-label="Menu Ekspor dan Cetak">
+              <div className="dropdown-section-label">Ekspor &amp; Template Data</div>
+              <button
+                type="button"
+                id="btn-download-master-template"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => {
+                  setExportOpen(false);
+                  void downloadMasterTemplateExcel();
+                }}
+              >
+                <FileSpreadsheet size={14} />
+                <span>Template Excel 4-Sheet</span>
+                <span className="dropdown-item-sub">.xlsx</span>
+              </button>
+
+              <button
+                type="button"
+                id="btn-export-all-excel"
+                className="dropdown-item"
+                role="menuitem"
+                disabled={!state.batchSummary}
+                onClick={() => {
+                  setExportOpen(false);
+                  if (state.batchSummary) {
+                    void exportBatchResultsExcel(state.jobs, state.batchSummary);
+                  }
+                }}
+              >
+                <Download size={14} />
+                <span>Hasil + Penjelasan 6-Pilar</span>
+                <span className="dropdown-item-sub">.xlsx</span>
+              </button>
+
+              <button
+                type="button"
+                id="btn-export-project-json"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => {
+                  setExportOpen(false);
+                  exportWorkspaceBundleJson(state.jobs, state.links, state.activeProjectName);
+                }}
+              >
+                <FileJson size={14} />
+                <span>Simpan Bundel Proyek</span>
+                <span className="dropdown-item-sub">.json</span>
+              </button>
+
+              <hr className="dropdown-divider" />
+              <div className="dropdown-section-label">Laporan &amp; Cetak</div>
+
+              <button
+                type="button"
+                id="btn-print-full-pdf"
+                className="dropdown-item"
+                role="menuitem"
+                disabled={!state.batchSummary}
+                onClick={() => {
+                  setExportOpen(false);
+                  triggerFullPdfReport();
+                }}
+              >
+                <FileText size={14} />
+                <span>Laporan PDF Lengkap</span>
+                <span className="dropdown-item-sub">A4</span>
+              </button>
+
+              <button
+                type="button"
+                id="btn-print-report"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => {
+                  setExportOpen(false);
+                  window.print();
+                }}
+              >
+                <Printer size={14} />
+                <span>Cetak Layar Saat Ini</span>
+                <span className="dropdown-item-sub">Print</span>
+              </button>
+
+              <hr className="dropdown-divider" />
+
+              <button
+                type="button"
+                id="btn-open-architecture"
+                className="dropdown-item"
+                role="menuitem"
+                onClick={() => {
+                  setExportOpen(false);
+                  toggleArchModal(true);
+                }}
+              >
+                <Layers size={14} />
+                <span>Arsitektur 5-Lapisan</span>
+                <span className="dropdown-item-sub">Info</span>
+              </button>
+            </div>
           )}
-
-          <button
-            type="button"
-            id="btn-export-project-json"
-            className="btn btn-tool"
-            onClick={() =>
-              exportWorkspaceBundleJson(state.jobs, state.links, state.activeProjectName)
-            }
-            title="Simpan bundel proyek .hajodeya.json"
-          >
-            <FileJson size={13} /> .json
-          </button>
-        </div>
-
-        <div className="toolbar-cluster" role="group" aria-label="Laporan dan Tampilan">
-          <button
-            type="button"
-            id="btn-print-report"
-            className="btn btn-tool"
-            onClick={() => window.print()}
-            title="Cetak tampilan saat ini"
-            aria-label="Cetak layar saat ini"
-          >
-            <Printer size={13} />
-          </button>
-
-          {state.batchSummary && (
-            <button
-              type="button"
-              id="btn-print-full-pdf"
-              className="btn btn-tool"
-              onClick={triggerFullPdfReport}
-              title="Cetak / Simpan Laporan PDF Lengkap seluruh 4 metode dengan halaman sampul"
-            >
-              <FileText size={13} /> PDF
-            </button>
-          )}
-
-          <button
-            type="button"
-            id="btn-toggle-theme"
-            className="btn btn-tool"
-            onClick={toggleTheme}
-            title={
-              state.theme === 'dark'
-                ? 'Beralih ke Mode Terang'
-                : 'Beralih ke Mode Gelap (Dark Workbench)'
-            }
-            aria-label="Ganti tema terang atau gelap"
-          >
-            {state.theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
-          </button>
-
-          <button
-            type="button"
-            id="btn-open-architecture"
-            className="btn btn-tool"
-            onClick={() => toggleArchModal(true)}
-            title="Lihat arsitektur sistem 5 lapisan Ha Jodeya"
-            aria-label="Lihat arsitektur sistem"
-          >
-            <Layers size={13} />
-          </button>
         </div>
 
         <button
           type="button"
+          id="btn-toggle-theme"
+          className="btn btn-sm"
+          style={{ padding: '0 0.5rem' }}
+          onClick={toggleTheme}
+          title={
+            state.theme === 'dark'
+              ? 'Beralih ke Mode Terang'
+              : 'Beralih ke Mode Gelap (Dark Workbench)'
+          }
+          aria-label="Ganti tema terang atau gelap"
+        >
+          {state.theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
+
+        <button
+          type="button"
           id="btn-run-all-modules"
-          className="btn btn-primary tab-num"
+          className="btn btn-primary btn-sm tab-num"
           disabled={state.isRunning || enabledCount === 0}
           onClick={() => void runAll(true)}
           title="Jalankan seluruh metode aktif secara paralel (Ctrl+Enter)"
         >
           <Play size={13} />
-          {state.isRunning && state.progress
-            ? `Memproses ${state.progress.completed}/${state.progress.total}…`
-            : `Jalankan (${enabledCount})`}
+          <span className="btn-run-label-full">
+            {state.isRunning && state.progress
+              ? `Memproses ${state.progress.completed}/${state.progress.total}…`
+              : `Jalankan (${enabledCount})`}
+          </span>
+          <span className="btn-run-label-short">
+            {state.isRunning && state.progress
+              ? `${state.progress.completed}/${state.progress.total}`
+              : `(${enabledCount})`}
+          </span>
         </button>
       </div>
     </header>
   );
 }
+

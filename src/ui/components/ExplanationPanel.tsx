@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  AlertTriangle,
   BookOpen,
   Check,
   CheckCircle2,
@@ -25,6 +26,34 @@ interface ExplanationPanelProps {
   forceExpandAll?: boolean;
 }
 
+function classifyReasonTone(reason: string): 'caution' | 'positive' | 'neutral' {
+  const lower = reason.toLowerCase();
+  if (
+    lower.includes('overload') ||
+    lower.includes('past-due') ||
+    lower.includes('terlambat') ||
+    lower.includes('defisit') ||
+    lower.includes('over-promise') ||
+    lower.includes('melebihi 100%') ||
+    lower.includes('melampaui')
+  ) {
+    return 'caution';
+  }
+  if (
+    lower.includes('hemat') ||
+    lower.includes('menurunkan total biaya') ||
+    lower.includes('optimal') ||
+    lower.includes('terendah') ||
+    lower.includes('terkecil') ||
+    lower.includes('terbaik') ||
+    lower.includes('memenuhi') ||
+    lower.includes('aman')
+  ) {
+    return 'positive';
+  }
+  return 'neutral';
+}
+
 export function ExplanationPanel({
   result,
   forceExpandAll = false,
@@ -33,6 +62,8 @@ export function ExplanationPanel({
   const [copied, setCopied] = useState(false);
   const exp = result.explanation;
   const showFull = forceExpandAll || state.explanationMode === 'complete';
+  const useBalanced2Col =
+    exp.metricBreakdown.length === 2 || exp.metricBreakdown.length === 4;
 
   const handleCopy = async () => {
     try {
@@ -95,24 +126,24 @@ export function ExplanationPanel({
         </div>
       </div>
 
-      {/* PILAR 1: KESIMPULAN INTI */}
+      {/* 01 · KESIMPULAN INTI */}
       <section className="exp-hero">
         <div className="exp-kicker">
           <Sparkles size={12} />
-          <span>Pilar 1 · Jawaban Inti &amp; Kesimpulan Bahasa Sehari-hari</span>
+          <span>01 · KESIMPULAN · Jawaban Inti &amp; Ringkasan Bahasa Sehari-hari</span>
         </div>
         <h3 className="exp-key-decision">{exp.keyDecision}</h3>
         <p className="exp-plain-summary">{exp.plainSummary}</p>
       </section>
 
-      {/* PILAR 4 (Selalu Tampil agar Alasan Keluarnya Jawaban Langsung Terbaca!) */}
+      {/* 02 · ALASAN KAUSAL (Selalu Tampil agar Alasan Keluarnya Jawaban Langsung Terbaca!) */}
       {exp.whyOptimal.length > 0 && (
         <section className="exp-pillar-card">
           <div className="exp-pillar-head">
             <div className="exp-pillar-title">
-              <span className="exp-pillar-num">4</span>
+              <span className="exp-pillar-num">02 · ALASAN KAUSAL</span>
               <HelpCircle size={13} />
-              <span>Mengapa Jawaban Ini yang Keluar? (Alasan Kausal &amp; Pembuktian)</span>
+              <span>Mengapa Jawaban Ini yang Keluar? (Pembuktian Angka Aktual)</span>
             </div>
             <span className="badge badge-primary mono-num">
               <CheckCircle2 size={11} /> {exp.whyOptimal.length} alasan
@@ -120,27 +151,41 @@ export function ExplanationPanel({
           </div>
           <div className="exp-pillar-body">
             <ul className="exp-why-list">
-              {exp.whyOptimal.map((reason, idx) => (
-                <li key={idx}>{reason}</li>
-              ))}
+              {exp.whyOptimal.map((reason, idx) => {
+                const tone = classifyReasonTone(reason);
+                return (
+                  <li key={idx} className={`exp-why-item tone-${tone}`}>
+                    <span className="exp-why-icon" aria-hidden="true">
+                      {tone === 'caution' ? (
+                        <AlertTriangle size={14} />
+                      ) : tone === 'positive' ? (
+                        <CheckCircle2 size={14} />
+                      ) : (
+                        <Sparkles size={14} />
+                      )}
+                    </span>
+                    <span>{reason}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </section>
       )}
 
-      {/* PILAR 2: ARTI & DAMPAK SETIAP ANGKA */}
+      {/* 03 · ARTI & DAMPAK SETIAP ANGKA */}
       {exp.metricBreakdown.length > 0 && (
         <section className="exp-pillar-card">
           <div className="exp-pillar-head">
             <div className="exp-pillar-title">
-              <span className="exp-pillar-num">2</span>
+              <span className="exp-pillar-num">03 · ARTI ANGKA</span>
               <Layers size={13} />
               <span>Bedah Arti &amp; Dampak Operasional Setiap Angka</span>
             </div>
             <span className="badge mono-num">{exp.metricBreakdown.length} metrik</span>
           </div>
           <div className="exp-pillar-body">
-            <div className="exp-metric-grid">
+            <div className={`exp-metric-grid ${useBalanced2Col ? 'exp-metric-grid-even' : ''}`}>
               {exp.metricBreakdown.map((item, idx) => (
                 <div key={idx} className="exp-metric-item">
                   <div className="exp-metric-top">
@@ -160,12 +205,12 @@ export function ExplanationPanel({
         </section>
       )}
 
-      {/* PILAR 3: LANGKAH PERHITUNGAN & SUBSTITUSI ANGKA AKTUAL */}
+      {/* 04 · LANGKAH PERHITUNGAN & SUBSTITUSI ANGKA AKTUAL */}
       {showFull && exp.workedSteps.length > 0 && (
         <section className="exp-pillar-card">
           <div className="exp-pillar-head">
             <div className="exp-pillar-title">
-              <span className="exp-pillar-num">3</span>
+              <span className="exp-pillar-num">04 · HITUNGAN</span>
               <ListChecks size={13} />
               <span>Langkah Perhitungan Bertahap &amp; Substitusi Angka Input Anda</span>
             </div>
@@ -201,12 +246,12 @@ export function ExplanationPanel({
         </section>
       )}
 
-      {/* PILAR 5: DIAGNOSA RISIKO & REKOMENDASI AKSI */}
+      {/* 05 · DIAGNOSA RISIKO & REKOMENDASI AKSI */}
       {(exp.risksAndNotes.length > 0 || exp.recommendations.length > 0) && (
         <section className="exp-pillar-card">
           <div className="exp-pillar-head">
             <div className="exp-pillar-title">
-              <span className="exp-pillar-num">5</span>
+              <span className="exp-pillar-num">05 · RISIKO &amp; AKSI</span>
               <ShieldAlert size={13} />
               <span>Diagnosa Risiko, Kapasitas &amp; Rekomendasi Tindak Lanjut</span>
             </div>
@@ -240,12 +285,12 @@ export function ExplanationPanel({
         </section>
       )}
 
-      {/* PILAR 6: KAMUS ISTILAH MODUL */}
+      {/* 06 · KAMUS ISTILAH MODUL */}
       {showFull && exp.glossary.length > 0 && (
         <section className="exp-pillar-card">
           <div className="exp-pillar-head">
             <div className="exp-pillar-title">
-              <span className="exp-pillar-num">6</span>
+              <span className="exp-pillar-num">06 · KAMUS</span>
               <BookOpen size={13} />
               <span>Kamus Istilah Penting ({result.moduleId.toUpperCase()})</span>
             </div>
@@ -265,3 +310,4 @@ export function ExplanationPanel({
     </div>
   );
 }
+

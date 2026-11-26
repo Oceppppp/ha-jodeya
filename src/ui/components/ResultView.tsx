@@ -134,7 +134,7 @@ export function ResultView({
 
       {/* 3. Calibrated Pure SVG Visualizations */}
       {result.charts.length > 0 && (
-        <div className="charts-grid">
+        <div id="editor-charts" className="charts-grid" style={{ scrollMarginTop: 112 }}>
           {result.charts.map((chart) => {
             if (chart.kind === 'line') return <SvgLineChart key={chart.id} spec={chart} />;
             if (chart.kind === 'bar') return <SvgBarChart key={chart.id} spec={chart} />;
@@ -145,41 +145,48 @@ export function ResultView({
       )}
 
       {/* 4. Result Tables */}
-      {result.tables.map((tbl) => {
-        const hlSet = new Set(tbl.highlightRowIndices ?? []);
-        return (
-          <div key={tbl.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <div className="sheet-section-label" style={{ marginBottom: 0 }}>
-              {tbl.title}
-            </div>
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    {tbl.headers.map((h, i) => (
-                      <th key={i}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tbl.rows.map((row, rIdx) => (
-                    <tr key={rIdx} className={hlSet.has(rIdx) ? 'row-highlight' : undefined}>
-                      {row.map((cell, cIdx) => (
-                        <td
-                          key={cIdx}
-                          className={typeof cell === 'number' ? 'mono-num' : undefined}
-                        >
-                          {cell}
-                        </td>
+      {result.tables.length > 0 && (
+        <div
+          id="editor-tables"
+          style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', scrollMarginTop: 112 }}
+        >
+          {result.tables.map((tbl) => {
+            const hlSet = new Set(tbl.highlightRowIndices ?? []);
+            return (
+              <div key={tbl.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div className="sheet-section-label" style={{ marginBottom: 0 }}>
+                  {tbl.title}
+                </div>
+                <div className="table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        {tbl.headers.map((h, i) => (
+                          <th key={i}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tbl.rows.map((row, rIdx) => (
+                        <tr key={rIdx} className={hlSet.has(rIdx) ? 'row-highlight' : undefined}>
+                          {row.map((cell, cIdx) => (
+                            <td
+                              key={cIdx}
+                              className={typeof cell === 'number' ? 'mono-num' : undefined}
+                            >
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
                       ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

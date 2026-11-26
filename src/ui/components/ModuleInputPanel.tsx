@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { ArrowRight, BookOpen, GitBranch, RotateCcw } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  Columns2,
+  GitBranch,
+  RotateCcw,
+  SlidersHorizontal,
+  Sparkles,
+  Table2,
+} from 'lucide-react';
 import { MODULE_MAP, MODULE_REGISTRY } from '../../core/registry/moduleRegistry.ts';
 import type {
   ForecastingInput,
@@ -25,6 +35,7 @@ export function ModuleInputPanel() {
   } = useWorkspace();
 
   const [showConceptGuide, setShowConceptGuide] = useState(true);
+  const [splitView, setSplitView] = useState(false);
 
   const activeJob = state.jobs.find((j) => j.id === state.activeJobId) ?? state.jobs[0];
 
@@ -56,53 +67,80 @@ export function ModuleInputPanel() {
 
   const incomingLinks = state.links.filter((l) => l.targetJobId === activeJob.id);
   const outgoingLinks = state.links.filter((l) => l.sourceJobId === activeJob.id);
+  const hasPipelineNeighbor = incomingLinks.length > 0 || outgoingLinks.length > 0;
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <>
-      {/* View Header (Single H1) */}
+      {/* View Header (Single H1 + Compact 1-Line Pipeline Breadcrumb) */}
       <header className="view-header">
-        <div style={{ flex: 1, minWidth: 260 }}>
+        <div className="view-header-main">
           <div className="view-eyebrow">
-            <span
-              className="stage-pill"
-              style={{ background: meta.stageAccentVar }}
-            >
+            <span className="stage-pill" style={{ background: meta.stageAccentVar }}>
               TAHAP {meta.stageNumber} · {meta.code}
             </span>
             <span>{meta.category}</span>
-            {incomingLinks.map((lk) => {
-              const src = state.jobs.find((j) => j.id === lk.sourceJobId);
-              if (!src) return null;
-              return (
-                <button
-                  key={lk.id}
-                  type="button"
-                  className="badge badge-primary"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => selectJob(src.id, true)}
-                  title="Klik untuk membuka modul sumber"
-                >
-                  <GitBranch size={10} /> Menerima dari: {src.title}
-                </button>
-              );
-            })}
-            {outgoingLinks.map((lk) => {
-              const tgt = state.jobs.find((j) => j.id === lk.targetJobId);
-              if (!tgt) return null;
-              return (
-                <button
-                  key={lk.id}
-                  type="button"
-                  className="badge"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => selectJob(tgt.id, true)}
-                  title="Klik untuk melompat ke modul hilir"
-                >
-                  Mengirim ke: {tgt.title} <ArrowRight size={10} />
-                </button>
-              );
-            })}
           </div>
+
+          {hasPipelineNeighbor && (
+            <div className="editor-pipeline-crumb no-print" aria-label="Posisi dalam Pipeline PPIC">
+              <GitBranch size={11} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+              {incomingLinks.map((lk) => {
+                const src = state.jobs.find((j) => j.id === lk.sourceJobId);
+                if (!src) return null;
+                const srcMeta = MODULE_MAP[src.moduleId];
+                return (
+                  <span key={lk.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <button
+                      type="button"
+                      className="crumb-stage-btn"
+                      onClick={() => selectJob(src.id, true)}
+                      title={`Buka modul sumber: ${src.title}`}
+                    >
+                      <span className="mono-num" style={{ color: srcMeta.stageAccentVar }}>
+                        {srcMeta.stageNumber} {srcMeta.code}
+                      </span>
+                      <span>{srcMeta.shortLabel}</span>
+                    </button>
+                    <ArrowRight size={11} style={{ color: 'var(--text-muted)' }} />
+                  </span>
+                );
+              })}
+
+              <span className="crumb-stage-btn current">
+                <span className="mono-num" style={{ color: meta.stageAccentVar }}>
+                  {meta.stageNumber} {meta.code}
+                </span>
+                <span>{meta.shortLabel}</span>
+              </span>
+
+              {outgoingLinks.map((lk) => {
+                const tgt = state.jobs.find((j) => j.id === lk.targetJobId);
+                if (!tgt) return null;
+                const tgtMeta = MODULE_MAP[tgt.moduleId];
+                return (
+                  <span key={lk.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <ArrowRight size={11} style={{ color: 'var(--text-muted)' }} />
+                    <button
+                      type="button"
+                      className="crumb-stage-btn"
+                      onClick={() => selectJob(tgt.id, true)}
+                      title={`Lompat ke modul hilir: ${tgt.title}`}
+                    >
+                      <span className="mono-num" style={{ color: tgtMeta.stageAccentVar }}>
+                        {tgtMeta.stageNumber} {tgtMeta.code}
+                      </span>
+                      <span>{tgtMeta.shortLabel}</span>
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
 
           <h1 className="view-heading">{meta.indonesianName}</h1>
           <p className="view-lead">{meta.description}</p>
@@ -126,10 +164,53 @@ export function ModuleInputPanel() {
               )
             }
           >
-            <RotateCcw size={12} /> Reset Contoh Default
+            <RotateCcw size={12} /> Reset Default
           </button>
         </div>
       </header>
+
+      {/* Sticky Quick-Jump Bar & Desktop Split-View Toggle */}
+      <nav className="editor-jump-bar no-print" aria-label="Navigasi Cepat Bagian Modul">
+        <div className="editor-jump-links">
+          <button
+            type="button"
+            className="jump-pill"
+            onClick={() => scrollToSection('editor-zone-input')}
+          >
+            <SlidersHorizontal size={11} /> 01 Input
+          </button>
+          <button
+            type="button"
+            className="jump-pill"
+            onClick={() => scrollToSection('editor-zone-output')}
+          >
+            <Sparkles size={11} /> 02 Hasil &amp; 6-Pilar
+          </button>
+          <button
+            type="button"
+            className="jump-pill"
+            onClick={() => scrollToSection('editor-charts')}
+          >
+            <BarChart3 size={11} /> Grafik
+          </button>
+          <button
+            type="button"
+            className="jump-pill"
+            onClick={() => scrollToSection('editor-tables')}
+          >
+            <Table2 size={11} /> Tabel
+          </button>
+        </div>
+
+        <button
+          type="button"
+          className={`btn btn-sm split-view-toggle ${splitView ? 'btn-primary' : ''}`}
+          onClick={() => setSplitView((v) => !v)}
+          title="Tampilkan Input di kiri dan Hasil di kanan secara berdampingan (layar lebar)"
+        >
+          <Columns2 size={13} /> {splitView ? 'Mode Bertumpuk' : 'Split-View'}
+        </button>
+      </nav>
 
       {/* Collapsible Method Concept Guide */}
       {showConceptGuide && (
@@ -165,6 +246,8 @@ export function ModuleInputPanel() {
                   background: 'var(--bg-subtle)',
                   border: '1px solid var(--border-hairline)',
                   borderRadius: 'var(--radius-xs)',
+                  overflowX: 'auto',
+                  wordBreak: 'break-word',
                 }}
               >
                 {f}
@@ -177,79 +260,91 @@ export function ModuleInputPanel() {
         </section>
       )}
 
-      {/* ZONE 01: INPUT SHEET */}
-      <section className="surface-panel no-print" aria-label="Lembar Input Data Metode">
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '0.75rem',
-            flexWrap: 'wrap',
-            marginBottom: '0.85rem',
-          }}
+      <div className={`editor-workspace-grid ${splitView ? 'split-active' : ''}`}>
+        {/* ZONE 01: INPUT SHEET */}
+        <section
+          id="editor-zone-input"
+          className="surface-panel no-print"
+          aria-label="Lembar Input Data Metode"
+          style={{ scrollMarginTop: 112 }}
         >
-          <div className="sheet-section-label" style={{ marginBottom: 0 }}>
-            01 · Lembar Input &amp; Parameter ({meta.code})
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.65rem',
+              flexWrap: 'wrap',
+              marginBottom: '0.85rem',
+            }}
+          >
+            <div className="sheet-section-label" style={{ marginBottom: 0 }}>
+              01 · Lembar Input &amp; Parameter ({meta.code})
+            </div>
+
+            <div className="editor-title-inline">
+              <label
+                htmlFor="input-job-title"
+                style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+              >
+                Judul Kasus:
+              </label>
+              <input
+                id="input-job-title"
+                type="text"
+                className="form-control editor-title-input"
+                value={activeJob.title}
+                onChange={(e) => updateJobMeta(activeJob.id, { title: e.target.value })}
+              />
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <label
-              htmlFor="input-job-title"
-              style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
-            >
-              Judul Kasus:
-            </label>
-            <input
-              id="input-job-title"
-              type="text"
-              className="form-control"
-              style={{ width: 250, height: 28, fontSize: 'var(--text-xs)' }}
-              value={activeJob.title}
-              onChange={(e) => updateJobMeta(activeJob.id, { title: e.target.value })}
+          {activeJob.moduleId === 'forecasting' && (
+            <ForecastingEditor
+              input={activeJob.input as ForecastingInput}
+              onChange={(next) => updateJobInput(activeJob.id, next)}
             />
+          )}
+          {activeJob.moduleId === 'mps' && (
+            <MpsEditor
+              input={activeJob.input as MpsInput}
+              onChange={(next) => updateJobInput(activeJob.id, next)}
+            />
+          )}
+          {activeJob.moduleId === 'mrp' && (
+            <MrpEditor
+              input={activeJob.input as MrpInput}
+              onChange={(next) => updateJobInput(activeJob.id, next)}
+            />
+          )}
+          {activeJob.moduleId === 'scheduling' && (
+            <SchedulingEditor
+              input={activeJob.input as SchedulingInput}
+              onChange={(next) => updateJobInput(activeJob.id, next)}
+            />
+          )}
+        </section>
+
+        {/* ZONE 02: LIVE ANALYTICAL OUTPUT & 6-PILLAR EXPLANATION */}
+        <section
+          id="editor-zone-output"
+          className="surface-panel"
+          aria-label="Keluaran Analitik dan Penjelasan 6-Pilar"
+          style={{ scrollMarginTop: 112 }}
+        >
+          <div className="sheet-section-label">
+            02 · Keluaran Analitik Real-Time &amp; Penjelasan Jawaban (6-Pilar)
           </div>
-        </div>
-
-        {activeJob.moduleId === 'forecasting' && (
-          <ForecastingEditor
-            input={activeJob.input as ForecastingInput}
-            onChange={(next) => updateJobInput(activeJob.id, next)}
-          />
-        )}
-        {activeJob.moduleId === 'mps' && (
-          <MpsEditor
-            input={activeJob.input as MpsInput}
-            onChange={(next) => updateJobInput(activeJob.id, next)}
-          />
-        )}
-        {activeJob.moduleId === 'mrp' && (
-          <MrpEditor
-            input={activeJob.input as MrpInput}
-            onChange={(next) => updateJobInput(activeJob.id, next)}
-          />
-        )}
-        {activeJob.moduleId === 'scheduling' && (
-          <SchedulingEditor
-            input={activeJob.input as SchedulingInput}
-            onChange={(next) => updateJobInput(activeJob.id, next)}
-          />
-        )}
-      </section>
-
-      {/* ZONE 02: LIVE ANALYTICAL OUTPUT & 6-PILLAR EXPLANATION */}
-      <section className="surface-panel" aria-label="Keluaran Analitik dan Penjelasan 6-Pilar">
-        <div className="sheet-section-label">
-          02 · Keluaran Analitik Real-Time &amp; Penjelasan Jawaban (6-Pilar)
-        </div>
-        {liveResult ? (
-          <ResultView job={activeJob} result={liveResult} />
-        ) : (
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
-            Sedang menghitung hasil di Web Worker Pool…
-          </p>
-        )}
-      </section>
+          {liveResult ? (
+            <ResultView job={activeJob} result={liveResult} />
+          ) : (
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
+              Sedang menghitung hasil di Web Worker Pool…
+            </p>
+          )}
+        </section>
+      </div>
     </>
   );
 }
+

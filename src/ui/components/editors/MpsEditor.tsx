@@ -79,187 +79,215 @@ export function MpsEditor({ input, onChange }: MpsEditorProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-      <div className="param-grid">
-        <div className="field-group">
-          <label className="field-label">Nama Produk Jadi</label>
-          <input
-            type="text"
-            className="form-control"
-            value={input.productName}
-            onChange={(e) => onChange({ ...input, productName: e.target.value })}
-          />
+      <div className="param-section-stack">
+        {/* Group 1: Produk & Persediaan Awal (3 cols) */}
+        <div className="param-subcard">
+          <div className="param-subcard-title">Identitas Produk &amp; Persediaan</div>
+          <div className="param-grid-3">
+            <div className="field-group">
+              <label className="field-label">Nama Produk Jadi</label>
+              <input
+                type="text"
+                className="form-control"
+                value={input.productName}
+                onChange={(e) => onChange({ ...input, productName: e.target.value })}
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Stok Awal (Beginning Inv.)</label>
+              <input
+                type="number"
+                min={0}
+                className="form-control mono-num"
+                value={input.beginningInventory}
+                onChange={(e) =>
+                  onChange({
+                    ...input,
+                    beginningInventory: Math.max(0, Number(e.target.value) || 0),
+                  })
+                }
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Safety Stock (SS)</label>
+              <input
+                type="number"
+                min={0}
+                className="form-control mono-num"
+                value={input.safetyStock}
+                onChange={(e) =>
+                  onChange({ ...input, safetyStock: Math.max(0, Number(e.target.value) || 0) })
+                }
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="field-group">
-          <label className="field-label">Stok Awal (Beginning Inv.)</label>
-          <input
-            type="number"
-            min={0}
-            className="form-control mono-num"
-            value={input.beginningInventory}
-            onChange={(e) =>
-              onChange({ ...input, beginningInventory: Math.max(0, Number(e.target.value) || 0) })
-            }
-          />
+        {/* Group 2: Time Fence & Aturan Lot-Sizing (4 cols) */}
+        <div className="param-subcard">
+          <div className="param-subcard-title">Kebijakan Time Fence &amp; Lot-Sizing MPS</div>
+          <div className="param-grid-4">
+            <div className="field-group">
+              <label className="field-label">Demand Time Fence (DTF)</label>
+              <input
+                type="number"
+                min={0}
+                max={T}
+                className="form-control mono-num"
+                value={input.demandTimeFence}
+                onChange={(e) => {
+                  const dtf = Math.max(0, Math.min(T, Number(e.target.value) || 0));
+                  onChange({
+                    ...input,
+                    demandTimeFence: dtf,
+                    planningTimeFence: Math.max(dtf, input.planningTimeFence),
+                  });
+                }}
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Planning Time Fence (PTF)</label>
+              <input
+                type="number"
+                min={input.demandTimeFence}
+                max={T}
+                className="form-control mono-num"
+                value={input.planningTimeFence}
+                onChange={(e) =>
+                  onChange({
+                    ...input,
+                    planningTimeFence: Math.max(
+                      input.demandTimeFence,
+                      Math.min(T, Number(e.target.value) || 0),
+                    ),
+                  })
+                }
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Kebijakan Zona Frozen (≤ DTF)</label>
+              <select
+                className="form-control"
+                value={input.frozenZonePolicy}
+                onChange={(e) =>
+                  onChange({
+                    ...input,
+                    frozenZonePolicy: e.target.value as MpsInput['frozenZonePolicy'],
+                  })
+                }
+              >
+                <option value="orders_only">Hanya Customer Orders</option>
+                <option value="max">Max(Forecast, Customer Orders)</option>
+              </select>
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Aturan Lot-Sizing MPS</label>
+              <select
+                className="form-control"
+                value={input.lotSizing}
+                onChange={(e) =>
+                  onChange({ ...input, lotSizing: e.target.value as MpsLotSizingMethod })
+                }
+              >
+                <option value="FOQ">FOQ (Fixed Order Qty)</option>
+                <option value="L4L">L4L (Lot-for-Lot)</option>
+                <option value="LOT_MULTIPLE">Lot-Multiple (Kelipatan Q)</option>
+                <option value="POQ">POQ (Periodic Order Qty)</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div className="field-group">
-          <label className="field-label">Safety Stock (SS)</label>
-          <input
-            type="number"
-            min={0}
-            className="form-control mono-num"
-            value={input.safetyStock}
-            onChange={(e) =>
-              onChange({ ...input, safetyStock: Math.max(0, Number(e.target.value) || 0) })
-            }
-          />
-        </div>
-
-        <div className="field-group">
-          <label className="field-label">Demand Time Fence (DTF)</label>
-          <input
-            type="number"
-            min={0}
-            max={T}
-            className="form-control mono-num"
-            value={input.demandTimeFence}
-            onChange={(e) => {
-              const dtf = Math.max(0, Math.min(T, Number(e.target.value) || 0));
-              onChange({
-                ...input,
-                demandTimeFence: dtf,
-                planningTimeFence: Math.max(dtf, input.planningTimeFence),
-              });
-            }}
-          />
-        </div>
-
-        <div className="field-group">
-          <label className="field-label">Planning Time Fence (PTF)</label>
-          <input
-            type="number"
-            min={input.demandTimeFence}
-            max={T}
-            className="form-control mono-num"
-            value={input.planningTimeFence}
-            onChange={(e) =>
-              onChange({
-                ...input,
-                planningTimeFence: Math.max(
-                  input.demandTimeFence,
-                  Math.min(T, Number(e.target.value) || 0),
-                ),
-              })
-            }
-          />
-        </div>
-
-        <div className="field-group">
-          <label className="field-label">Kebijakan Zona Frozen (≤ DTF)</label>
-          <select
-            className="form-control"
-            value={input.frozenZonePolicy}
-            onChange={(e) =>
-              onChange({
-                ...input,
-                frozenZonePolicy: e.target.value as MpsInput['frozenZonePolicy'],
-              })
+        {/* Group 3: Ukuran Batch, Kapasitas RCCP & Parameter Biaya */}
+        <div className="param-subcard">
+          <div className="param-subcard-title">Kapasitas RCCP &amp; Parameter Biaya</div>
+          <div
+            className={
+              input.lotSizing === 'L4L' ? 'param-grid-3' : 'param-grid-4'
             }
           >
-            <option value="orders_only">Hanya Customer Orders</option>
-            <option value="max">Max(Forecast, Customer Orders)</option>
-          </select>
-        </div>
+            {(input.lotSizing === 'FOQ' || input.lotSizing === 'LOT_MULTIPLE') && (
+              <div className="field-group">
+                <label className="field-label">Ukuran Batch Lot (Q)</label>
+                <input
+                  type="number"
+                  min={1}
+                  className="form-control mono-num"
+                  value={input.lotSize}
+                  onChange={(e) =>
+                    onChange({ ...input, lotSize: Math.max(1, Number(e.target.value) || 1) })
+                  }
+                />
+              </div>
+            )}
 
-        <div className="field-group">
-          <label className="field-label">Aturan Lot-Sizing MPS</label>
-          <select
-            className="form-control"
-            value={input.lotSizing}
-            onChange={(e) =>
-              onChange({ ...input, lotSizing: e.target.value as MpsLotSizingMethod })
-            }
-          >
-            <option value="FOQ">FOQ (Fixed Order Qty)</option>
-            <option value="L4L">L4L (Lot-for-Lot)</option>
-            <option value="LOT_MULTIPLE">Lot-Multiple (Kelipatan Q)</option>
-            <option value="POQ">POQ (Periodic Order Qty)</option>
-          </select>
-        </div>
+            {input.lotSizing === 'POQ' && (
+              <div className="field-group">
+                <label className="field-label">Cakupan Periode POQ</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={12}
+                  className="form-control mono-num"
+                  value={input.poqPeriods}
+                  onChange={(e) =>
+                    onChange({ ...input, poqPeriods: Math.max(1, Number(e.target.value) || 2) })
+                  }
+                />
+              </div>
+            )}
 
-        {(input.lotSizing === 'FOQ' || input.lotSizing === 'LOT_MULTIPLE') && (
-          <div className="field-group">
-            <label className="field-label">Ukuran Batch Lot (Q)</label>
-            <input
-              type="number"
-              min={1}
-              className="form-control mono-num"
-              value={input.lotSize}
-              onChange={(e) =>
-                onChange({ ...input, lotSize: Math.max(1, Number(e.target.value) || 1) })
-              }
-            />
+            <div className="field-group">
+              <label className="field-label">Jam Standar / Unit (RCCP)</label>
+              <input
+                type="number"
+                step={0.05}
+                min={0.01}
+                className="form-control mono-num"
+                value={input.stdHoursPerUnit}
+                onChange={(e) =>
+                  onChange({
+                    ...input,
+                    stdHoursPerUnit: Math.max(0.01, Number(e.target.value) || 0.5),
+                  })
+                }
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Biaya Setup per Batch</label>
+              <input
+                type="number"
+                min={0}
+                className="form-control mono-num"
+                value={input.setupCost}
+                onChange={(e) =>
+                  onChange({ ...input, setupCost: Math.max(0, Number(e.target.value) || 0) })
+                }
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Biaya Simpan / Unit / Periode</label>
+              <input
+                type="number"
+                min={0}
+                className="form-control mono-num"
+                value={input.holdingCostPerUnit}
+                onChange={(e) =>
+                  onChange({
+                    ...input,
+                    holdingCostPerUnit: Math.max(0, Number(e.target.value) || 0),
+                  })
+                }
+              />
+            </div>
           </div>
-        )}
-
-        {input.lotSizing === 'POQ' && (
-          <div className="field-group">
-            <label className="field-label">Cakupan Periode POQ</label>
-            <input
-              type="number"
-              min={1}
-              max={12}
-              className="form-control mono-num"
-              value={input.poqPeriods}
-              onChange={(e) =>
-                onChange({ ...input, poqPeriods: Math.max(1, Number(e.target.value) || 2) })
-              }
-            />
-          </div>
-        )}
-
-        <div className="field-group">
-          <label className="field-label">Jam Standar / Unit (RCCP)</label>
-          <input
-            type="number"
-            step={0.05}
-            min={0.01}
-            className="form-control mono-num"
-            value={input.stdHoursPerUnit}
-            onChange={(e) =>
-              onChange({ ...input, stdHoursPerUnit: Math.max(0.01, Number(e.target.value) || 0.5) })
-            }
-          />
-        </div>
-
-        <div className="field-group">
-          <label className="field-label">Biaya Setup per Batch</label>
-          <input
-            type="number"
-            min={0}
-            className="form-control mono-num"
-            value={input.setupCost}
-            onChange={(e) =>
-              onChange({ ...input, setupCost: Math.max(0, Number(e.target.value) || 0) })
-            }
-          />
-        </div>
-
-        <div className="field-group">
-          <label className="field-label">Biaya Simpan / Unit / Periode</label>
-          <input
-            type="number"
-            min={0}
-            className="form-control mono-num"
-            value={input.holdingCostPerUnit}
-            onChange={(e) =>
-              onChange({
-                ...input,
-                holdingCostPerUnit: Math.max(0, Number(e.target.value) || 0),
-              })
-            }
-          />
         </div>
       </div>
 

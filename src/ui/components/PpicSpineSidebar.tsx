@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import {
+  ChevronDown,
+  ChevronRight,
   FolderKanban,
   FolderPlus,
   GitBranch,
@@ -37,6 +39,7 @@ export function PpicSpineSidebar() {
   );
   const [renamingProject, setRenamingProject] = useState(false);
   const [renameDraft, setRenameDraft] = useState('');
+  const [queueExpanded, setQueueExpanded] = useState(true);
 
   const handleCreateProject = () => {
     createProject(newProjectName, newProjectPreset);
@@ -234,7 +237,28 @@ export function PpicSpineSidebar() {
       {/* Active Jobs Queue (Supports multiple scenarios/jobs per method) */}
       <div className="sidebar-section">
         <div className="rail-heading">
-          <span>Antrean Pekerjaan ({state.jobs.length})</span>
+          <button
+            type="button"
+            onClick={() => setQueueExpanded((v) => !v)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              border: 'none',
+              background: 'transparent',
+              padding: 0,
+              cursor: 'pointer',
+              fontSize: 'inherit',
+              fontWeight: 'inherit',
+              letterSpacing: 'inherit',
+              textTransform: 'inherit',
+              color: 'inherit',
+            }}
+            aria-expanded={queueExpanded}
+          >
+            {queueExpanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+            <span>Antrean Pekerjaan ({state.jobs.length})</span>
+          </button>
           {state.jobs.length > 0 && (
             <button
               type="button"
@@ -248,74 +272,76 @@ export function PpicSpineSidebar() {
           )}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {state.jobs.map((job) => {
-            const meta = MODULE_MAP[job.moduleId];
-            const isSelected =
-              state.activeView === 'module-editor' && state.activeJobId === job.id;
-            return (
-              <div
-                key={job.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  padding: '0.35rem 0.45rem',
-                  borderRadius: 'var(--radius-sm)',
-                  background: isSelected ? 'var(--bg-highlight)' : 'var(--bg-surface)',
-                  border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-hairline)'}`,
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={job.enabled}
-                  onChange={(e) => updateJobMeta(job.id, { enabled: e.target.checked })}
-                  aria-label={`Aktifkan ${job.title}`}
-                />
-                <button
-                  type="button"
+        {queueExpanded && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {state.jobs.map((job) => {
+              const meta = MODULE_MAP[job.moduleId];
+              const isSelected =
+                state.activeView === 'module-editor' && state.activeJobId === job.id;
+              return (
+                <div
+                  key={job.id}
                   style={{
-                    flex: 1,
-                    minWidth: 0,
-                    textAlign: 'left',
-                    border: 'none',
-                    background: 'transparent',
-                    padding: 0,
-                    cursor: 'pointer',
-                    fontSize: 'var(--text-xs)',
-                    fontWeight: isSelected ? 700 : 500,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.3rem 0.42rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: isSelected ? 'var(--bg-highlight)' : 'var(--bg-surface)',
+                    border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-hairline)'}`,
                   }}
-                  onClick={() => selectJob(job.id, true)}
                 >
-                  <span className="mono-num" style={{ color: 'var(--primary)', marginRight: 4 }}>
-                    [{meta.code}]
-                  </span>
-                  {job.title}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-ghost"
-                  style={{ height: 22, padding: '0 4px' }}
-                  onClick={() => removeJob(job.id)}
-                  aria-label={`Hapus ${job.title}`}
-                >
-                  <Trash2 size={11} />
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  <input
+                    type="checkbox"
+                    checked={job.enabled}
+                    onChange={(e) => updateJobMeta(job.id, { enabled: e.target.checked })}
+                    aria-label={`Aktifkan ${job.title}`}
+                  />
+                  <button
+                    type="button"
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      textAlign: 'left',
+                      border: 'none',
+                      background: 'transparent',
+                      padding: 0,
+                      cursor: 'pointer',
+                      fontSize: 'var(--text-xs)',
+                      fontWeight: isSelected ? 700 : 500,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                    onClick={() => selectJob(job.id, true)}
+                  >
+                    <span className="mono-num" style={{ color: 'var(--primary)', marginRight: 4 }}>
+                      [{meta.code}]
+                    </span>
+                    {job.title}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    style={{ height: 22, padding: '0 4px' }}
+                    onClick={() => removeJob(job.id)}
+                    aria-label={`Hapus ${job.title}`}
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-        {/* Add additional method job buttons */}
+        {/* Compact 1-row 4-column quick-add bar so Preset Cepat fits above the fold */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
             gap: '4px',
-            marginTop: '0.25rem',
+            marginTop: '0.15rem',
           }}
         >
           {MODULE_REGISTRY.map((mod) => (
@@ -323,10 +349,16 @@ export function PpicSpineSidebar() {
               key={`add-${mod.id}`}
               type="button"
               className="btn btn-sm"
-              style={{ justifyContent: 'flex-start', fontSize: '0.7rem' }}
+              style={{
+                padding: '0 0.25rem',
+                height: 26,
+                fontSize: '0.67rem',
+                gap: '2px',
+              }}
+              title={`Tambah pekerjaan ${mod.indonesianName}`}
               onClick={() => addModuleJob(mod.id)}
             >
-              <Plus size={11} /> {mod.code}
+              <Plus size={10} /> {mod.code}
             </button>
           ))}
         </div>

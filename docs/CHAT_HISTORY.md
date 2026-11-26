@@ -29,7 +29,9 @@
 | **06** | Menambahkan penjelasan & interpretasi detail atas alasan keluarnya jawaban pada setiap modul dan memperbarui Project Planning | Dirancang arsitektur **Penjelasan Kausal 6-Pilar (`CompleteExplanation`)** di seluruh 4 modul beserta spesifikasi di PRD & Project Planning |
 | **07** | Mulai membangun aplikasi sesuai Project Plan & Design Plan, cek kesiapan sistem, dan gunakan semua skill relevan | Audit skill & environment, lalu implementasi 4 engine matematika murni, Worker Pool, Pipeline DAG, IO Zero-`eval()`, UI 4-lapisan, dan 6 suite tes Vitest |
 | **08** | Melanjutkan pengerjaan hingga selesai, push ke GitHub, dan melaporkan daftar skill yang digunakan | Seluruh gerbang QA lulus (Lint, TSC, 18 Tes, Build PWA, Live Chrome E2E), repo `Oceppppp/ha-jodeya` dibuat & di-push (`CI` hijau), daftar 12 skill dilaporkan |
-| **09** | Memasukkan histori percakapan ini ke GitHub | Dokumen `docs/CHAT_HISTORY.md` disusun, ditautkan di `README.md`, dan di-push ke `Oceppppp/ha-jodeya` |
+| **09** | Memasukkan histori percakapan ini ke GitHub | Dokumen `docs/CHAT_HISTORY.md` disusun, ditautkan di `README.md`, dan di-push ke `Oceppppp/ha-jodeya` (commit `0b4f99c`, CI hijau) |
+| **10** | Menanyakan area UI dan penampilan aplikasi yang masih bisa dikembangkan | Audit visual 4 screenshot aktual (Dashboard, Editor MPS, 6-Pilar, Pipeline Dark) menghasilkan rancangan paket **UI Polish v1.1** |
+| **11** | Menjalankan paket UI Polish v1.1 + memperbaiki tampilan HP (berdasarkan foto screenshot iPhone pengguna) + memperbarui histori chat & repo GitHub setelah verifikasi menyeluruh | Paket **UI Polish v1.1 & Mobile-First Overhaul** diterapkan, diverifikasi `overflowPx = 0` pada viewport Desktop 1440px & iPhone 390px, seluruh gerbang QA lulus, lalu di-push ke `Oceppppp/ha-jodeya` |
 
 ---
 
@@ -146,7 +148,43 @@
 
 **Respons & Keputusan Utama:**
 - Mengonfirmasi tujuan penyimpanan (repo publik `Oceppppp/ha-jodeya` pada [`docs/CHAT_HISTORY.md`](CHAT_HISTORY.md) + tautan di [`README.md`](../README.md)) dan format log percakapan kronologis lengkap.
-- Menyusun dokumen ini secara bersih (tanpa path internal sensitif atau kredensial) dan mem-push ke branch `main`.
+- Menyusun dokumen ini secara bersih (tanpa path internal sensitif atau kredensial), mem-push commit `0b4f99c` ke branch `main`, dan memverifikasi GitHub Actions CI Run `#45617745777` lulus hijau (`25s`).
+
+---
+
+### Tahap 10 — Audit Visual & Rekomendasi Pengembangan UI (v1.1)
+
+**Prompt Pengguna:**
+> adakah yang masi bisa di kembangkan dari sisi UI nya dan penampilan nya
+
+**Respons & Keputusan Utama:**
+- Meninjau langsung 4 screenshot hasil render aktual (*Dashboard*, *Editor MPS*, *Penjelasan 6-Pilar*, dan *Pipeline Dark Mode*) serta mengecek interaksi tooltip pada seluruh 5 grafik SVG.
+- Mengidentifikasi dan menyusun **Paket UI Polish v1.1** yang mencakup 4 fokus utama:
+  1. Eliminasi *orphan grid* pada 11 parameter MPS dan 4 kartu metrik Pilar 2 (*Bedah Arti & Dampak*).
+  2. Penguatan visualisasi alur 4-Tahap PPIC (label Bahasa Indonesia ramah pengguna & animasi panah pada `SvgPipelineDag`, garis *stepper spine* di sidebar kiri, panah arah `→`, garis aksen warna tahap, serta label KPI eksplisit pada kartu Dashboard).
+  3. Ergonomi navigasi: penyederhanaan TopBar lewat **Dropdown "Ekspor"**, *breadcrumb* pipeline 1 baris di header modul, *sticky jump-bar* + tombol **Split-View** (layar ≥1380px), dan baris tambah cepat 4 kolom agar `Preset Cepat` terlihat tanpa scroll.
+  4. Penomoran semantik runtut pada 6-Pilar (`01 KESIMPULAN` → `02 ALASAN KAUSAL` → `03 ARTI ANGKA` → `04 HITUNGAN` → `05 RISIKO & AKSI` → `06 KAMUS`) dengan ikon status per alasan, kartu KPI interaktif yang memfilter tabel, serta peningkatan kontras tab aktif pada mode gelap.
+
+---
+
+### Tahap 11 — Eksekusi UI Polish v1.1, Perbaikan Tampilan HP (Mobile Overhaul), & Verifikasi Menyeluruh
+
+**Prompt Pengguna:**
+> boleh jalankan paket UI polishnya dan serta perbaiki tampilan ketika membuka webnya di hp seperti foto yang saya berikan tersebut karena kalo di buka dr hp masi kurang bagus, serta tambahkan hasil chat histori ini juga ke bagian chat history di respiratori github yang sudah ada, dan update respiratori githubnya karena ada update dari aplikasinya serta periksa dan pengecekan dahulu sebelum di push ke github
+> *(Melampirkan foto screenshot langsung dari browser Safari iPhone pada `ha-jodeya.vercel.app`)*
+
+**Respons & Implementasi Lengkap:**
+1. **Diagnosa Screenshot HP (390px iPhone Safari):**
+   - Menemukan 3 akar penyebab tampilan HP meluber ke kanan: (a) `.topbar` tidak membungkus ke 2 baris sehingga tombol menu & logo terdorong keluar layar, (b) `.stage-health-card` (elemen `<button>`) tidak memiliki `min-width: 0` sementara teks ringkasannya memakai `white-space: nowrap` sehingga menarik lebar kartu melewati layar HP, dan (c) `.charts-grid` memakai `minmax(420px, 1fr)` serta `.kpi-grid` menumpuk 1 kolom panjang alih-alih grid 2×2.
+2. **Perbaikan Mobile-First + Seluruh Paket UI Polish v1.1:**
+   - **Header HP 2-Baris Rapi (`<= 860px`):** Baris 1 memuat `[≡ Menu] [Logo Ha Jodeya]` di kiri dan `[Ekspor ▾] [Dark Mode] [▶ (4)]` di kanan; Baris 2 memuat tab navigasi 4 kolom penuh (`Ringkasan`, `Editor`, `Pipeline`, `Upload`) tanpa overflow dan dengan padding *safe-area* iOS (`viewport-fit=cover` + `env(safe-area-inset-bottom)`).
+   - **TopBar Desktop Lebih Lega (`TopBar.tsx`):** Menggabungkan `Template`, `.xlsx`, `.json`, `PDF`, `Print`, dan `Arsitektur` ke dalam **Dropdown Ekspor** aksesibel (mendukung klik di luar & tombol `Escape`).
+   - **Dashboard & KPI (`BatchDashboard.tsx`):** Kartu 4-Tahap memakai garis aksen warna tahap, panah alur `→` desktop, label KPI eksplisit, teks 2-baris bebas overflow; strip KPI memakai grid **2×2 pada HP** dan dapat diklik untuk memfilter tabel status.
+   - **Sidebar (`PpicSpineSidebar.tsx`):** Garis vertikal *stepper spine* dipertegas, tombol tambah cepat menjadi 1 baris 4 kolom (`+FC`, `+MPS`, `+MR`, `+SC`), dan `Antrean Pekerjaan` dapat dilipat agar `Preset Cepat` tampil di atas lipatan layar.
+   - **Editor, MPS & 6-Pilar (`ModuleInputPanel.tsx`, `MpsEditor.tsx`, `ExplanationPanel.tsx`, `ResultView.tsx`):** Breadcrumb pipeline 1-baris, *sticky jump-bar* 1-baris di desktop & HP + toggle **Split-View** (≥1380px), 3 sub-kartu parameter MPS tanpa field yatim, badge 6-Pilar runtut (`01`..`06`), kartu alasan kausal berikon status (`✓`, `⚠`, `✦`), dan grid 2×2 seimbang pada Pilar `03 · ARTI ANGKA`.
+   - **Pipeline DAG (`SvgPipelineDag.tsx`, `PipelineLinker.tsx`):** Lebar node diperbesar tanpa potongan kata, label panah Bahasa Indonesia (`Deret Forecast`, `Jadwal MPS`, `Order Kerja MRP`), animasi aliran garis putus-putus, petunjuk geser horizontal di HP, serta label ramah pengguna di tabel sambungan aktif.
+3. **Verifikasi Ulang Desktop (1440×900) & Mobile iPhone (390×844):**
+   - Menjalankan `npm run lint`, `npx tsc --noEmit`, `npm test`, `npm run build`, dan E2E Headless Chrome pada 7 kombinasi layar (Desktop 1440px & Mobile 390px di seluruh tab), memastikan `overflowPx = 0`, 0 console errors, dan 0 page exceptions sebelum push ke GitHub.
 
 ---
 
@@ -162,9 +200,9 @@
 | 6 | `mathematical-validation` | Merancang pengujian numerik independen & invarian matematis untuk Forecasting, MPS, MRP, Scheduling, serta audit 6-Pilar |
 | 7 | `data-import-validation` | Merancang pipeline impor/ekspor aman (Excel, CSV, JSON, JS tanpa `eval()`), deteksi tipe file, dan Column Mapping Wizard |
 | 8 | `frontend-ui` | Menerapkan sistem desain *Precision Analytical Workbench* dengan React 19, TypeScript ketat, aksesibilitas, dan `tabular-nums` |
-| 9 | `web-app-development` | Menyusun struktur styling Vanilla CSS 4-lapisan, responsivitas layout, Light/Dark Mode, serta polish UI |
+| 9 | `web-app-development` | Menyusun struktur styling Vanilla CSS 4-lapisan, responsivitas layout Desktop/Mobile, Light/Dark Mode, serta polish UI |
 | 10 | `generative_ui` | Membangun pratinjau blueprint interaktif (`design_blueprint_preview.html`) pada tahap perencanaan |
-| 11 | `qa-release` | Menjalankan gerbang verifikasi rilis lengkap (Oxlint, TypeScript, Vitest, Vite Build + SHA-256 SW, Live Chrome E2E, CI) |
+| 11 | `qa-release` | Menjalankan gerbang verifikasi rilis lengkap (Oxlint, TypeScript, Vitest, Vite Build + SHA-256 SW, Live Chrome Desktop & Mobile E2E, CI) |
 | 12 | `github` | Membuat repositori `Oceppppp/ha-jodeya`, push branch `main`, dan memantau hasil GitHub Actions CI melalui `gh` CLI |
 
 ---
@@ -177,16 +215,18 @@
 | 2 | `ERR_MODULE_NOT_FOUND` pada skrip generator sample dataset | Penggunaan impor relatif dari direktori scratch sementara | Mengarahkan impor skrip ke path modul target yang tepat hingga 7 file `samples/` berhasil dibuat |
 | 3 | TopBar terbungkus 2 baris & tombol menu mobile muncul di layar desktop 1440px (tertangkap saat inspeksi screenshot Chrome E2E) | `.topbar-actions` menggunakan `flex-wrap: wrap` dan `.btn { display: inline-flex }` menimpa aturan `display: none` tombol mobile | Mengubah `.topbar-actions` menjadi `flex-wrap: nowrap`, merapikan padding `.btn-tool`, dan menaikkan spesifisitas `.btn.mobile-menu-btn, .btn.mobile-drawer-close`; diverifikasi ulang lewat screenshot baru |
 | 4 | Proses skrip verifikasi live Chrome sempat menggantung setelah hasil sukses dicetak | Handle child process `vite preview` dan `chrome` masih menahan event loop Node | Menambahkan cleanup eksplisit (`kill` + `process.exit`) sehingga skrip selesai bersih dengan exit code `0` |
+| 5 | Tampilan HP 390px mengalami overflow horizontal pada TopBar & kartu 4-Tahap (tertangkap dari screenshot iPhone Safari pengguna) serta *sticky jump-bar* mobile membungkus 2 baris | Elemen `<button class="stage-health-card">` tanpa `min-width: 0` disertai teks `white-space: nowrap`, TopBar 1 baris meluber, `.charts-grid` memakai `minmax(420px, 1fr)`, dan `.editor-jump-bar` di `top: 86px` membungkus 2 baris | Menerapkan `overflow-x: clip`, header mobile 2-baris (94px), `min-width: 0` + clamp 2-baris pada kartu tahap, grid KPI 2×2 di HP, `minmax(min(420px, 100%), 1fr)` pada grafik, serta *sticky jump-bar* 1 baris pas di `top: 94px`; diverifikasi `overflowPx = 0` di seluruh tab pada viewport 390×844 |
 
 ---
 
-## Ringkasan Hasil Verifikasi Rilis Awal
+## Ringkasan Hasil Verifikasi (v1.0 & v1.1 UI/Mobile Polish)
 
 | Gerbang Verifikasi | Perintah / Metode | Hasil |
 | --- | --- | --- |
 | **Static Lint** | `npm run lint` (`oxlint`) | **0 warnings, 0 errors** (68 file) |
 | **Type Check** | `npx tsc --noEmit` | **0 errors** |
 | **Unit & Integration Tests** | `npm test` (`vitest run`) | **6/6 file, 18/18 tes lulus** (Matematika, Audit 6-Pilar & Pure Layer, DAG 4-Tahap, Universal IO, Hosting & SW) |
-| **Production Build & PWA** | `npm run build` | **Sukses** — `dist/sw.js` berstempel SHA-256 (`hajodeya-20f0cb90f9`) dengan daftar precache lengkap |
-| **Live Browser E2E** | Headless Chrome pada `vite preview` | HTTP `200` (`/`, `/sw.js`, `/manifest.webmanifest`, `/icon.svg`), eksekusi batch `68 ms`, **0 console errors**, **0 page exceptions**, tanpa `NaN`/`undefined` |
-| **GitHub Actions CI** | Run `#45615116961` pada `main` | **`completed` / `success`** |
+| **Production Build & PWA** | `npm run build` | **Sukses** — `dist/sw.js` berstempel SHA-256 otomatis dengan daftar precache lengkap |
+| **Live Browser E2E (Desktop 1440×900)** | Headless Chrome pada `vite preview` | HTTP `200` (`/`, `/sw.js`, `/manifest.webmanifest`, `/icon.svg`), TopBar `56px`, Dropdown Ekspor `6 item`, 3 sub-kartu MPS, 6 grafik, **0 overflow**, **0 console errors**, **0 page exceptions** |
+| **Live Browser E2E (Mobile iPhone 390×844)** | Headless Chrome Mobile Emulation (2× DPR) | `overflowPx: 0` pada seluruh 4 tab (*Dashboard*, *Editor MPS*, *Pipeline Dark*, *Upload*), TopBar mobile 2-baris `94px`, **0 console errors**, **0 page exceptions** |
+| **GitHub Actions CI** | `Oceppppp/ha-jodeya` (`main`) | Rilis v1.0 (`#45615116961`) & Docs (`#45617745777`) **`success`**; diverifikasi ulang untuk rilis v1.1 |

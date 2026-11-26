@@ -34,6 +34,7 @@
   --primary-soft: #ebf3f9;
   --primary-border: #adc9df;
   --primary-ink: #ffffff;
+  --nav-active-ink: #1b4965;
 
   --success: #047857;
   --success-soft: #ecfdf5;
@@ -117,9 +118,10 @@
 
   --primary: #60a5fa;
   --primary-hover: #93c5fd;
-  --primary-soft: rgba(96, 165, 250, 0.15);
-  --primary-border: rgba(96, 165, 250, 0.4);
+  --primary-soft: rgba(96, 165, 250, 0.16);
+  --primary-border: rgba(96, 165, 250, 0.45);
   --primary-ink: #0b111a;
+  --nav-active-ink: #dbeafe;
 
   --success: #34d399;
   --success-soft: rgba(52, 211, 153, 0.14);
