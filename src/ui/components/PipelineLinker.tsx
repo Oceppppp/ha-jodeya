@@ -283,6 +283,75 @@ export function PipelineLinker() {
           </div>
         )}
       </section>
+
+      {/* Live Transferred Data Inspector (Shows exact values flowing FC -> MPS -> MRP -> SC) */}
+      {state.batchSummary?.transfersByJobId &&
+        Object.values(state.batchSummary.transfersByJobId).flat().length > 0 && (
+          <section className="surface-panel" aria-label="Inspeksi Data yang Berpindah Antar-Tahap">
+            <div className="sheet-section-label">
+              03 · Bukti Data yang Berpindah Antar-Tahap (Live)
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {Object.values(state.batchSummary.transfersByJobId)
+                .flat()
+                .map((tr) => {
+                  const srcMeta = MODULE_MAP[tr.sourceModuleId];
+                  const tgtMeta = MODULE_MAP[tr.targetModuleId];
+                  return (
+                    <div key={`pipe-tr-${tr.linkId}`} className="pipeline-transfer-card" style={{ marginBottom: 0 }}>
+                      <div className="pipeline-transfer-head">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <span className="stage-pill" style={{ background: srcMeta.stageAccentVar }}>
+                            {srcMeta.stageNumber} · {srcMeta.code}
+                          </span>
+                          <ArrowRight size={12} style={{ color: 'var(--text-muted)' }} />
+                          <span className="stage-pill" style={{ background: tgtMeta.stageAccentVar }}>
+                            {tgtMeta.stageNumber} · {tgtMeta.code}
+                          </span>
+                          <strong style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
+                            {tr.headline}
+                          </strong>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-sm"
+                          onClick={() => selectJob(tr.targetJobId, true)}
+                        >
+                          Buka {tgtMeta.code}
+                        </button>
+                      </div>
+                      <div className="table-wrap">
+                        <table className="data-table">
+                          <thead>
+                            <tr>
+                              {tr.headers.map((h, i) => (
+                                <th key={i}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tr.rows.map((row, rIdx) => (
+                              <tr key={rIdx}>
+                                {row.map((cell, cIdx) => (
+                                  <td
+                                    key={cIdx}
+                                    className={cIdx > 0 ? 'mono-num' : undefined}
+                                    style={cIdx === 0 ? { fontWeight: 600 } : undefined}
+                                  >
+                                    {cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </section>
+        )}
     </>
   );
 }

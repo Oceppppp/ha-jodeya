@@ -169,16 +169,25 @@ export async function runAllModulesSimultaneously(
   const plan = buildPipelineExecutionStages(jobs, links);
   const totalJobs = plan.stages.reduce((acc, s) => acc + s.length, 0);
   const resultsByJobId: Record<string, ModuleExecutionResult> = {};
+  const effectiveInputsByJobId: Record<string, ModuleJob['input']> = {};
+  const transfersByJobId: Record<string, NonNullable<BatchRunSummary['transfersByJobId']>[string]> =
+    {};
   let completed = 0;
 
   for (const stage of plan.stages) {
     const stageResults = await Promise.all(
       stage.map(async (rawJob) => {
-        const { updatedJob, appliedNotes } = applyPipelineLinksToJob(
+        const { updatedJob, appliedNotes, transfers } = applyPipelineLinksToJob(
           rawJob,
           links,
           resultsByJobId,
         );
+        if (transfers.length > 0 || appliedNotes.length > 0) {
+          effectiveInputsByJobId[updatedJob.id] = updatedJob.input;
+        }
+        if (transfers.length > 0) {
+          transfersByJobId[updatedJob.id] = transfers;
+        }
         const result = await runSingleJobAsync(updatedJob);
         if (appliedNotes.length > 0) {
           result.warnings = [...appliedNotes, ...result.warnings];
@@ -210,5 +219,7 @@ export async function runAllModulesSimultaneously(
     warningCount,
     errorCount,
     resultsByJobId,
+    effectiveInputsByJobId,
+    transfersByJobId,
   };
 }

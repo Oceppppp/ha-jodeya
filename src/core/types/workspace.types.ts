@@ -24,6 +24,21 @@ export interface PipelineLink {
   multiplier: number;
 }
 
+export interface PipelineTransferRecord {
+  linkId: string;
+  sourceJobId: string;
+  sourceJobTitle: string;
+  sourceModuleId: ModuleId;
+  targetJobId: string;
+  targetModuleId: ModuleId;
+  sourceOutputKey: string;
+  targetField: string;
+  multiplier: number;
+  headline: string;
+  headers: string[];
+  rows: (string | number)[][];
+}
+
 export interface BatchRunSummary {
   runId: string;
   startedAt: number;
@@ -34,6 +49,8 @@ export interface BatchRunSummary {
   warningCount: number;
   errorCount: number;
   resultsByJobId: Record<string, ModuleExecutionResult>;
+  effectiveInputsByJobId?: Record<string, ModuleInputData>;
+  transfersByJobId?: Record<string, PipelineTransferRecord[]>;
 }
 
 export interface ScenarioSnapshot {

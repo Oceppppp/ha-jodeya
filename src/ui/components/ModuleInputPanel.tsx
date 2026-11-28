@@ -3,9 +3,11 @@ import {
   ArrowRight,
   BarChart3,
   BookOpen,
+  CheckCircle2,
   Columns2,
   GitBranch,
   RotateCcw,
+  Send,
   SlidersHorizontal,
   Sparkles,
   Table2,
@@ -13,6 +15,7 @@ import {
 import { MODULE_MAP, MODULE_REGISTRY } from '../../core/registry/moduleRegistry.ts';
 import type {
   ForecastingInput,
+  ModuleId,
   MpsInput,
   MrpInput,
   SchedulingInput,
@@ -25,6 +28,24 @@ import { MrpEditor } from './editors/MrpEditor.tsx';
 import { SchedulingEditor } from './editors/SchedulingEditor.tsx';
 import { ResultView } from './ResultView.tsx';
 
+const CASCADE_CTA_LABELS: Partial<Record<ModuleId, { button: string; detail: string }>> = {
+  forecasting: {
+    button: 'Oper ke MPS → MRP → SC',
+    detail:
+      'Kirim deret proyeksi Forecasting ini ke MPS, lalu alirkan otomatis hingga MRP & Scheduling (membuat tahap hilir otomatis bila belum ada).',
+  },
+  mps: {
+    button: 'Oper Jadwal ke MRP → SC',
+    detail:
+      'Kirim jadwal MPS Receipts ini ke Gross Requirements Level-0 MRP dan teruskan Work Order ke Scheduling.',
+  },
+  mrp: {
+    button: 'Oper Work Order ke Scheduling',
+    detail:
+      'Kirim daftar Planned Order Releases MRP ini menjadi Work Order (waktu proses, due date, bobot) ke tabel Scheduling.',
+  },
+};
+
 export function ModuleInputPanel() {
   const {
     state,
@@ -32,6 +53,7 @@ export function ModuleInputPanel() {
     addModuleJob,
     updateJobInput,
     updateJobMeta,
+    cascadeFromJob,
   } = useWorkspace();
 
   const [showConceptGuide, setShowConceptGuide] = useState(true);
@@ -64,6 +86,8 @@ export function ModuleInputPanel() {
 
   const meta = MODULE_MAP[activeJob.moduleId];
   const liveResult = state.batchSummary?.resultsByJobId[activeJob.id];
+  const incomingTransfers = state.batchSummary?.transfersByJobId?.[activeJob.id] ?? [];
+  const cascadeCta = CASCADE_CTA_LABELS[activeJob.moduleId];
 
   const incomingLinks = state.links.filter((l) => l.targetJobId === activeJob.id);
   const outgoingLinks = state.links.filter((l) => l.sourceJobId === activeJob.id);
@@ -147,6 +171,18 @@ export function ModuleInputPanel() {
         </div>
 
         <div className="view-header-actions no-print">
+          {cascadeCta && (
+            <button
+              type="button"
+              id={`btn-cascade-${activeJob.moduleId}`}
+              className="btn btn-primary btn-sm"
+              disabled={state.isRunning}
+              onClick={() => void cascadeFromJob(activeJob.id, true)}
+              title={cascadeCta.detail}
+            >
+              <Send size={12} /> {cascadeCta.button}
+            </button>
+          )}
           <button
             type="button"
             className="btn btn-sm"
@@ -299,6 +335,75 @@ export function ModuleInputPanel() {
             </div>
           </div>
 
+          {/* LIVE PIPELINE TRANSFER PROOF CARD (Shows exact data received from upstream!) */}
+          {incomingTransfers.length > 0 && (
+            <div className="pipeline-transfer-card" data-testid="pipeline-transfer-proof">
+              {incomingTransfers.map((tr) => {
+                const srcMeta = MODULE_MAP[tr.sourceModuleId];
+                return (
+                  <div key={tr.linkId} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="pipeline-transfer-head">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                        <span className="badge badge-success">
+                          <CheckCircle2 size={11} /> Data Masuk dari Pipeline
+                        </span>
+                        <span className="stage-pill" style={{ background: srcMeta.stageAccentVar }}>
+                          {srcMeta.stageNumber} · {srcMeta.code}
+                        </span>
+                        <ArrowRight size={12} style={{ color: 'var(--text-muted)' }} />
+                        <span className="stage-pill" style={{ background: meta.stageAccentVar }}>
+                          {meta.stageNumber} · {meta.code}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => selectJob(tr.sourceJobId, true)}
+                      >
+                        Lihat Sumber ({srcMeta.code})
+                      </button>
+                    </div>
+
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontWeight: 600 }}>
+                      {tr.headline}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      Tabel input di bawah sudah <strong>otomatis terisi</strong> dari hasil perhitungan{' '}
+                      <strong>{tr.sourceJobTitle}</strong>. Setiap perubahan di tahap hulu langsung memperbarui data ini.
+                    </div>
+
+                    <div className="table-wrap">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            {tr.headers.map((h, i) => (
+                              <th key={i}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tr.rows.map((row, rIdx) => (
+                            <tr key={rIdx}>
+                              {row.map((cell, cIdx) => (
+                                <td
+                                  key={cIdx}
+                                  className={cIdx > 0 ? 'mono-num' : undefined}
+                                  style={cIdx === 0 ? { fontWeight: 600 } : undefined}
+                                >
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {activeJob.moduleId === 'forecasting' && (
             <ForecastingEditor
               input={activeJob.input as ForecastingInput}
@@ -332,8 +437,21 @@ export function ModuleInputPanel() {
           aria-label="Keluaran Analitik dan Penjelasan 6-Pilar"
           style={{ scrollMarginTop: 112 }}
         >
-          <div className="sheet-section-label">
-            02 · Keluaran Analitik Real-Time &amp; Penjelasan Jawaban (6-Pilar)
+          <div className="pipeline-handoff-bar no-print">
+            <div className="sheet-section-label" style={{ marginBottom: 0 }}>
+              02 · Keluaran Analitik Real-Time &amp; Penjelasan Jawaban (6-Pilar)
+            </div>
+            {cascadeCta && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                disabled={state.isRunning}
+                onClick={() => void cascadeFromJob(activeJob.id, true)}
+                title={cascadeCta.detail}
+              >
+                <Send size={12} /> {cascadeCta.button}
+              </button>
+            )}
           </div>
           {liveResult ? (
             <ResultView job={activeJob} result={liveResult} />
@@ -347,4 +465,5 @@ export function ModuleInputPanel() {
     </>
   );
 }
+
 

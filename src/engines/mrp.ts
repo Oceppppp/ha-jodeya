@@ -394,12 +394,15 @@ export function solveMrp(
       for (let t = 0; t < T; t += 1) level0Releases[t] += chosen.plannedRel[t];
     }
 
-    // Collect manufacturing work orders (Level 0 & Level 1 releases) for downstream Scheduling pipeline
+    // Collect manufacturing work orders (Level 0 & Level 1 releases, including urgent Past-Due) for downstream Scheduling pipeline
     if (item.effectiveLevel <= 1) {
       const lt = Math.max(1, Math.round(item.leadTime || 1));
+      const cleanCode = item.item.replace(/[^A-Za-z0-9]/g, '').slice(0, 6).toUpperCase() || 'ITEM';
+      if (chosen.pastDue > 1e-9 && workOrderTokens.length < 12) {
+        workOrderTokens.push(`${cleanCode}-PD:${roundTo(chosen.pastDue, 2)}:${lt * 5}:3`);
+      }
       chosen.plannedRel.forEach((relQty, tIdx) => {
         if (relQty > 1e-9 && workOrderTokens.length < 12) {
-          const cleanCode = item.item.replace(/[^A-Za-z0-9]/g, '').slice(0, 6).toUpperCase() || 'ITEM';
           const dueDay = (tIdx + lt) * 5;
           const weight = item.effectiveLevel === 0 ? 2 : 1;
           workOrderTokens.push(`${cleanCode}-P${tIdx + 1}:${roundTo(relQty, 2)}:${dueDay}:${weight}`);

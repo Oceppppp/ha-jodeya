@@ -1134,6 +1134,35 @@
   font-size: var(--text-xs);
 }
 
+.pipeline-transfer-card {
+  background: var(--bg-app);
+  border: 1px solid var(--success-border);
+  border-left: 3.5px solid var(--success);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.pipeline-transfer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pipeline-handoff-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
 /* Batch Toolbar & What-If Multi-Scenario */
 .batch-toolbar {
   display: flex;

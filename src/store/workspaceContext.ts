@@ -71,6 +71,7 @@ export interface WorkspaceContextValue {
   commitPendingCandidates: (autoRun?: boolean) => void;
   clearCandidates: () => void;
   runAll: (switchToDashboard?: boolean) => Promise<void>;
+  cascadeFromJob: (sourceJobId: string, openNextStage?: boolean) => Promise<void>;
   saveScenarioSnapshot: (label?: string) => void;
   removeScenarioSnapshot: (snapshotId: string) => void;
   clearScenarioSnapshot: () => void;

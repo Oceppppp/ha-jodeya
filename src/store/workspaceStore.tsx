@@ -5,6 +5,7 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
+import { ensureDownstreamChainFromJob } from '../core/pipeline/pipelineResolver.ts';
 import { MODULE_MAP } from '../core/registry/moduleRegistry.ts';
 import type { ModuleId, ModuleInputData } from '../core/types/module.types.ts';
 import type {
@@ -155,6 +156,14 @@ type Action =
   | { type: 'RUN_START'; total: number }
   | { type: 'RUN_PROGRESS'; completed: number; total: number }
   | { type: 'RUN_COMPLETE'; summary: BatchRunSummary; switchToDashboard?: boolean }
+  | {
+      type: 'APPLY_CASCADE';
+      jobs: ModuleJob[];
+      links: PipelineLink[];
+      summary: BatchRunSummary;
+      nextJobId: string | null;
+      openEditor: boolean;
+    }
   | { type: 'TOGGLE_ARCH_MODAL'; open: boolean }
   | { type: 'SET_COMMAND_PALETTE'; open: boolean }
   | { type: 'SET_SIDEBAR_OPEN'; open: boolean }
@@ -433,13 +442,42 @@ function reducer(state: WorkspaceState, action: Action): WorkspaceState {
         progress: { completed: action.completed, total: action.total },
       };
 
-    case 'RUN_COMPLETE':
+    case 'RUN_COMPLETE': {
+      const effectiveMap = action.summary.effectiveInputsByJobId;
+      let nextJobs = state.jobs;
+      if (effectiveMap && Object.keys(effectiveMap).length > 0) {
+        let changed = false;
+        const mapped = state.jobs.map((j) => {
+          const eff = effectiveMap[j.id];
+          if (!eff) return j;
+          if (JSON.stringify(j.input) === JSON.stringify(eff)) return j;
+          changed = true;
+          return { ...j, input: eff };
+        });
+        if (changed) nextJobs = mapped;
+      }
       return {
         ...state,
+        jobs: nextJobs,
         isRunning: false,
         progress: null,
         batchSummary: action.summary,
         activeView: action.switchToDashboard ? 'batch-results' : state.activeView,
+      };
+    }
+
+    case 'APPLY_CASCADE':
+      return {
+        ...state,
+        ...withHistory(state),
+        jobs: action.jobs,
+        links: action.links,
+        isRunning: false,
+        progress: null,
+        batchSummary: action.summary,
+        activeJobId: action.nextJobId ?? state.activeJobId,
+        activeView: action.openEditor ? 'module-editor' : state.activeView,
+        sidebarOpen: false,
       };
 
     case 'TOGGLE_ARCH_MODAL':
@@ -465,6 +503,7 @@ function reducer(state: WorkspaceState, action: Action): WorkspaceState {
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, loadInitialState);
   const didInitialAutoRun = useRef(false);
+  const skipNextAutoRunRef = useRef(false);
 
   // Sync theme attribute on <html>
   useEffect(() => {
@@ -519,6 +558,19 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           total: prog.total,
         });
       });
+
+      const effectiveMap = summary.effectiveInputsByJobId;
+      if (
+        effectiveMap &&
+        jobs.some(
+          (j) =>
+            effectiveMap[j.id] &&
+            JSON.stringify(j.input) !== JSON.stringify(effectiveMap[j.id]),
+        )
+      ) {
+        skipNextAutoRunRef.current = true;
+      }
+
       dispatch({ type: 'RUN_COMPLETE', summary, switchToDashboard });
     },
     [],
@@ -536,6 +588,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   // Debounced live re-calculation when editing inputs/links so upstream -> downstream stays fresh
   useEffect(() => {
     if (!didInitialAutoRun.current) return;
+    if (skipNextAutoRunRef.current) {
+      skipNextAutoRunRef.current = false;
+      return;
+    }
     const timer = window.setTimeout(() => {
       if (state.jobs.some((j) => j.enabled)) {
         void executeBatch(state.jobs, state.links, false);
@@ -549,6 +605,44 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       await executeBatch(state.jobs, state.links, switchToDashboard);
     },
     [executeBatch, state.jobs, state.links],
+  );
+
+  const cascadeFromJob = useCallback(
+    async (sourceJobId: string, openNextStage = true) => {
+      const chain = ensureDownstreamChainFromJob(
+        state.jobs,
+        state.links,
+        sourceJobId,
+        createJobForModule,
+      );
+      const enabled = chain.jobs.filter((j) => j.enabled);
+      if (enabled.length === 0) return;
+
+      dispatch({ type: 'RUN_START', total: enabled.length });
+      const summary = await runAllModulesSimultaneously(chain.jobs, chain.links, (prog) => {
+        dispatch({
+          type: 'RUN_PROGRESS',
+          completed: prog.completed,
+          total: prog.total,
+        });
+      });
+
+      const effectiveMap = summary.effectiveInputsByJobId ?? {};
+      const materializedJobs = chain.jobs.map((j) =>
+        effectiveMap[j.id] ? { ...j, input: effectiveMap[j.id] } : j,
+      );
+
+      skipNextAutoRunRef.current = true;
+      dispatch({
+        type: 'APPLY_CASCADE',
+        jobs: materializedJobs,
+        links: chain.links,
+        summary,
+        nextJobId: chain.nextStageJobId,
+        openEditor: openNextStage,
+      });
+    },
+    [state.jobs, state.links],
   );
 
   const setView = useCallback((view: ActiveViewMode) => {
@@ -863,6 +957,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     commitPendingCandidates,
     clearCandidates,
     runAll,
+    cascadeFromJob,
     saveScenarioSnapshot,
     removeScenarioSnapshot,
     clearScenarioSnapshot,
